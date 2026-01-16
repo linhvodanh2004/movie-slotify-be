@@ -1,0 +1,3 @@
+﻿run in root solution folder:
+- dotnet ef migrations add InitialCreate --project DataAccess --startup-project Presentation (create Migrations folder in DataAccess))
+- dotnet ef database update --project DataAccess --startup-project Presentation (update database))

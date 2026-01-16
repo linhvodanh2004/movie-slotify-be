@@ -3,6 +3,14 @@
   "WorkspaceRootPath": "D:\\fpt\\PRN232\\movie-slotify-be\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|d:\\fpt\\prn232\\movie-slotify-be\\presentation\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|solutionrelative:presentation\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|d:\\fpt\\prn232\\movie-slotify-be\\presentation\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|solutionrelative:presentation\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1A18D271-C874-456B-814E-82CF8162294F}|BusinessLogic\\BusinessLogic.csproj|d:\\fpt\\prn232\\movie-slotify-be\\businesslogic\\services\\implementation\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1A18D271-C874-456B-814E-82CF8162294F}|BusinessLogic\\BusinessLogic.csproj|solutionrelative:businesslogic\\services\\implementation\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -25,10 +33,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{C2257B01-C758-4F27-95AE-0C0E895E675A}|DataAccess\\DataAccess.csproj|d:\\fpt\\prn232\\movie-slotify-be\\dataaccess\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C2257B01-C758-4F27-95AE-0C0E895E675A}|DataAccess\\DataAccess.csproj|solutionrelative:dataaccess\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|d:\\fpt\\prn232\\movie-slotify-be\\presentation\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5B58EB98-AAE1-4109-8495-4628DDBB89C8}|Presentation\\Presentation.csproj|solutionrelative:presentation\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,7 +42,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,7 +50,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\Presentation\\appsettings.json",
+              "RelativeDocumentMoniker": "Presentation\\appsettings.json",
+              "ToolTip": "D:\\fpt\\PRN232\\movie-slotify-be\\Presentation\\appsettings.json",
+              "RelativeToolTip": "Presentation\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAYAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-01-16T03:13:07.717Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "UserRegistrationRequest.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\BusinessLogic\\DTOs\\requests\\UserRegistrationRequest.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\DTOs\\requests\\UserRegistrationRequest.cs",
@@ -59,7 +76,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 7,
               "Title": "User.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\DataAccess\\Entities\\User.cs",
               "RelativeDocumentMoniker": "DataAccess\\Entities\\User.cs",
@@ -72,7 +89,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 6,
               "Title": "UserResponse.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\BusinessLogic\\DTOs\\responses\\UserResponse.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\DTOs\\responses\\UserResponse.cs",
@@ -85,7 +102,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "AuthController.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\Presentation\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "Presentation\\Controllers\\AuthController.cs",
@@ -98,7 +115,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "AuthService.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\BusinessLogic\\Services\\Implementation\\AuthService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\Implementation\\AuthService.cs",
@@ -111,7 +128,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "IAuthService.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\BusinessLogic\\Services\\IAuthService.cs",
               "RelativeDocumentMoniker": "BusinessLogic\\Services\\IAuthService.cs",
@@ -124,13 +141,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\fpt\\PRN232\\movie-slotify-be\\Presentation\\Program.cs",
               "RelativeDocumentMoniker": "Presentation\\Program.cs",
               "ToolTip": "D:\\fpt\\PRN232\\movie-slotify-be\\Presentation\\Program.cs",
               "RelativeToolTip": "Presentation\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACQAAABOAAAAAAAAAA==",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAxwCQAAABOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-01-14T03:04:17.116Z",
               "EditorCaption": ""

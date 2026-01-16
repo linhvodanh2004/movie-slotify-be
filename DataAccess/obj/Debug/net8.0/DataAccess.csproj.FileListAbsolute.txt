@@ -12,3 +12,4 @@ D:\fpt\PRN232\movie-slotify-be\DataAccess\obj\Debug\net8.0\DataAccess.pdb
 D:\fpt\PRN232\movie-slotify-be\DataAccess\obj\Debug\net8.0\DataAccess.genruntimeconfig.cache
 D:\fpt\PRN232\movie-slotify-be\DataAccess\obj\Debug\net8.0\ref\DataAccess.dll
 D:\fpt\PRN232\movie-slotify-be\DataAccess\obj\Debug\net8.0\DataAccess.csproj.AssemblyReference.cache
+D:\fpt\PRN232\movie-slotify-be\DataAccess\obj\Debug\net8.0\DataAccess.sourcelink.json

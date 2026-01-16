@@ -19,10 +19,13 @@ namespace Presentation
             var builder = WebApplication.CreateBuilder(args);
 
 
-            // 1. Cấu hình MySQL
+            // 1. Cấu hình db connect
             var connectionString = builder.Configuration.GetConnectionString("DbContext");
+
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+                options.UseSqlServer(connectionString)
+            );
+
 
             // 2. Cấu hình JWT Authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

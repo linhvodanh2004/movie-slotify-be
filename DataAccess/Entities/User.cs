@@ -13,5 +13,6 @@ namespace DataAccess.Entities
         public string Email { get; set; }
         public string Password { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsActive { get; set; } = true;
     }
 }

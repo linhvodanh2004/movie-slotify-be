@@ -72,19 +72,19 @@ namespace BusinessLogic.Services.Implementation
         public async Task<LoginResponse> RefreshToken(string token, string ipAddress)
         {
             var user = await _userRepository.GetUserByRefreshToken(token);
-            if (user == null) throw new UnauthorizedException("Invalid Token");
+            if (user == null) throw new UnauthorizedException("Token không hợp lệ");
 
             var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
 
             if (!refreshToken.IsActive)
             {
-               throw new UnauthorizedException("Inactive Token");
+               throw new UnauthorizedException("Token không hợp lệ");
             }
 
             // Revoke current refresh token
             refreshToken.Revoked = DateTime.UtcNow;
             refreshToken.RevokedByIp = ipAddress;
-            refreshToken.ReasonRevoked = "Replaced by new token";
+            refreshToken.ReasonRevoked = "Đã thay thế bằng token mới";
             
             // Generate new tokens
             var newRefreshToken = _tokenService.GenerateRefreshToken();
@@ -109,15 +109,15 @@ namespace BusinessLogic.Services.Implementation
         public async Task RevokeToken(string token, string ipAddress)
         {
              var user = await _userRepository.GetUserByRefreshToken(token);
-             if (user == null) throw new BadRequestException("Token not found");
+             if (user == null) throw new BadRequestException("Token không hợp lệ");
              
              var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
              
-             if (!refreshToken.IsActive) throw new BadRequestException("Token is already inactive");
+             if (!refreshToken.IsActive) throw new BadRequestException("Token không hợp lệ");
 
              refreshToken.Revoked = DateTime.UtcNow;
              refreshToken.RevokedByIp = ipAddress;
-             refreshToken.ReasonRevoked = "Revoked without replacement";
+             refreshToken.ReasonRevoked = "Đã thu hồi token";
              
              await _userRepository.UpdateRefreshToken(refreshToken);
         }

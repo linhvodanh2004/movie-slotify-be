@@ -9,6 +9,7 @@ using DataAccess.Repositories;
 using DataAccess.Repositories.Implementation;
 using BusinessLogic.Services;
 using BusinessLogic.Services.Implementation;
+using Presentation.Middleware;
 
 namespace Presentation
 {
@@ -45,18 +46,26 @@ namespace Presentation
 
             // Repository registration
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+            
             // Service registration
+            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            app.UseExceptionHandler();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

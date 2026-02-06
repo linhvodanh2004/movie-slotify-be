@@ -18,29 +18,37 @@ namespace Presentation.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegistrationRequest request)
         {
-            try
-            {
-                var userResponse = await _authService.Register(request);
-                return Ok(userResponse);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var userResponse = await _authService.Register(request);
+            return Ok(userResponse);
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
-            try
-            {
-                var loginResponse = await _authService.Login(request);
-                return Ok(loginResponse);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var loginResponse = await _authService.Login(request, IpAddress());
+            return Ok(loginResponse);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var response = await _authService.RefreshToken(request.Token, IpAddress());
+            return Ok(response);
+        }
+
+        [HttpPost("revoke")]
+        public async Task<IActionResult> Revoke([FromBody] RevokeTokenRequest request)
+        {
+            await _authService.RevokeToken(request.Token, IpAddress());
+            return Ok(new { message = "Token revoked" });
+        }
+
+        private string IpAddress()
+        {
+            if (Request.Headers.ContainsKey("X-Forwarded-For"))
+                return Request.Headers["X-Forwarded-For"];
+            else
+                return HttpContext.Connection.RemoteIpAddress?.MapToIPv4().ToString();
         }
     }
 }

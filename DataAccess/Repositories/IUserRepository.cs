@@ -13,5 +13,8 @@ namespace DataAccess.Repositories
         Task<bool> IsUsernameExists(string username);
         Task AddUser(User user);
         Task<User?> GetUserByUsername(string username);
+        Task<User?> GetUserByRefreshToken(string token);
+        Task AddRefreshToken(RefreshToken refreshToken);
+        Task UpdateRefreshToken(RefreshToken refreshToken);
     }
 }

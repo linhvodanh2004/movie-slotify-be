@@ -38,5 +38,25 @@ namespace DataAccess.Repositories.Implementation
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
+
+        public async Task<User?> GetUserByRefreshToken(string token)
+        {
+            var refreshToken = await _context.RefreshTokens
+                .Include(r => r.User)
+                .SingleOrDefaultAsync(r => r.Token == token);
+            return refreshToken?.User;
+        }
+
+        public async Task AddRefreshToken(RefreshToken refreshToken)
+        {
+            await _context.RefreshTokens.AddAsync(refreshToken);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateRefreshToken(RefreshToken refreshToken)
+        {
+            _context.RefreshTokens.Update(refreshToken);
+            await _context.SaveChangesAsync();
+        }
     }
 }

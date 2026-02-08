@@ -73,6 +73,37 @@ namespace DataAccess.Persistence
                 .HasOne(b => b.Payment)
                 .WithOne(p => p.Booking)
                 .HasForeignKey<Payment>(p => p.BookingId);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(x => x.Token)
+                .IsUnique();
+
+            // Fix Multiple Cascade Paths: Ticket -> Seat
+            modelBuilder.Entity<Ticket>()
+                .HasOne(t => t.Seat)
+                .WithMany()
+                .HasForeignKey(t => t.SeatId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Fix Decimal Precision Warnings
+            modelBuilder.Entity<Booking>()
+                .Property(b => b.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Ticket>()
+                .Property(t => t.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<Showtime>(entity =>
+            {
+                entity.Property(s => s.StandardPrice).HasColumnType("decimal(18,2)");
+                entity.Property(s => s.VipPrice).HasColumnType("decimal(18,2)");
+                entity.Property(s => s.CouplePrice).HasColumnType("decimal(18,2)");
+            });
         }
     }
 }

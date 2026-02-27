@@ -1,14 +1,13 @@
-﻿
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+﻿using System;
 using System.Text;
-using System;
+using BusinessLogic.Services;
+using BusinessLogic.Services.Implementation;
 using DataAccess.Persistence;
 using DataAccess.Repositories;
 using DataAccess.Repositories.Implementation;
-using BusinessLogic.Services;
-using BusinessLogic.Services.Implementation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Presentation.Middleware;
 using DotNetEnv;
 
@@ -22,6 +21,8 @@ namespace Presentation
             DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
 
             var builder = WebApplication.CreateBuilder(args);
+            var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+            builder.WebHost.UseUrls($"http://*:{port}");
 
             // 1. Cấu hình db connect
             var connectionString = builder.Configuration.GetConnectionString("DbContext");
@@ -30,10 +31,11 @@ namespace Presentation
                 options.UseSqlServer(connectionString)
             );
 
-
             // 2. Cấu hình JWT Authentication
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options => {
+            builder
+                .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
@@ -42,14 +44,15 @@ namespace Presentation
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidAudience = builder.Configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+                        ),
                     };
                 });
 
-
             // Repository registration
             builder.Services.AddScoped<IUserRepository, UserRepository>();
-            
+
             // Service registration
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
@@ -75,27 +78,22 @@ namespace Presentation
             builder.Services.AddProblemDetails();
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowFrontend",
+                options.AddPolicy(
+                    "AllowFrontend",
                     policy =>
                     {
-                        policy.WithOrigins("http://localhost:3000")
-                            .AllowAnyHeader()
-                            .AllowAnyMethod()
-                            .AllowCredentials();
-                    });
+                        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                    }
+                );
             });
-
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             app.UseExceptionHandler();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
             app.UseAuthentication();

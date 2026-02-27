@@ -59,10 +59,15 @@ namespace Presentation
             builder.Services.AddScoped<IImageService, ImageService>();
 
             // Cloudinary
-            var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];
-            if (!string.IsNullOrEmpty(cloudinaryUrl))
+            var cloudinarySettings = builder.Configuration.GetSection("Cloudinary").Get<Presentation.Configs.CloudinarySettings>();
+            if (cloudinarySettings != null && !string.IsNullOrEmpty(cloudinarySettings.CloudName))
             {
-                var cloudinary = new CloudinaryDotNet.Cloudinary(cloudinaryUrl);
+                var account = new CloudinaryDotNet.Account(
+                    cloudinarySettings.CloudName,
+                    cloudinarySettings.ApiKey,
+                    cloudinarySettings.ApiSecret
+                );
+                var cloudinary = new CloudinaryDotNet.Cloudinary(account);
                 cloudinary.Api.Secure = true;
                 builder.Services.AddSingleton(cloudinary);
             }

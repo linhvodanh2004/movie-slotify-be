@@ -19,6 +19,21 @@ namespace BusinessLogic.Services.Implementation
         {
             if (file == null || file.Length == 0) return null;
 
+            // Maximum file size setup to 5MB
+            long maxFileSize = 5 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+            {
+                throw new BusinessLogic.Exceptions.BadRequestException("File size exceeds the 5MB limit.");
+            }
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var extension = System.IO.Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (string.IsNullOrEmpty(extension) || Array.IndexOf(allowedExtensions, extension) == -1)
+            {
+                throw new BusinessLogic.Exceptions.BadRequestException("Invalid file format. Allowed formats are: jpg, jpeg, png, webp.");
+            }
+
             using var stream = file.OpenReadStream();
             var uploadParams = new ImageUploadParams
             {

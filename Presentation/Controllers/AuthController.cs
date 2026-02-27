@@ -33,6 +33,15 @@ namespace Presentation.Controllers
             return Ok(new ApiResponse<LoginResponse>(loginResponse, "Login successful"));
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            var loginResponse = await _authService.GoogleLogin(request, IpAddress());
+            SetTokenCookie(loginResponse.RefreshToken);
+            loginResponse.RefreshToken = null; // Hide from body to avoid leak since it's HttpOnly
+            return Ok(new ApiResponse<LoginResponse>(loginResponse, "Google login successful"));
+        }
+
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken()
         {

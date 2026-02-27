@@ -8,6 +8,8 @@ using BusinessLogic.Exceptions;
 using DataAccess.Entities;
 using DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Google.Apis.Auth;
+using Microsoft.Extensions.Configuration;
 
 namespace BusinessLogic.Services.Implementation
 {
@@ -16,12 +18,14 @@ namespace BusinessLogic.Services.Implementation
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper)
+        public AuthService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
         public async Task<UserResponse> Register(UserRegistrationRequest request)
@@ -50,6 +54,61 @@ namespace BusinessLogic.Services.Implementation
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
                 throw new UnauthorizedException("Sai tài khoản hoặc mật khẩu");
+            }
+
+            var token = _tokenService.GenerateAccessToken(user);
+            var refreshToken = _tokenService.GenerateRefreshToken();
+            refreshToken.UserId = user.Id;
+            refreshToken.CreatedByIp = ipAddress;
+            
+            await _userRepository.AddRefreshToken(refreshToken);
+            
+            var response = _mapper.Map<UserResponse>(user);
+            
+            return new LoginResponse
+            {
+                Token = token,
+                RefreshToken = refreshToken.Token,
+                User = response
+            };
+        }
+
+        public async Task<LoginResponse> GoogleLogin(GoogleLoginRequest request, string ipAddress)
+        {
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                var settings = new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = new[] { _configuration["Google:ClientId"] }
+                };
+                payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
+            }
+            catch (Exception)
+            {
+                throw new UnauthorizedException("Invalid Google token.");
+            }
+
+            var user = await _userRepository.GetUserByUsername(payload.Email); // Assuming email is username
+            
+            if (user == null)
+            {
+                // Register new user
+                user = new User
+                {
+                    Email = payload.Email,
+                    Username = payload.Email, // Ensure username is populated
+                    FullName = payload.Name,
+                    AvatarUrl = payload.Picture,
+                    IsActive = true,
+                    Role = "USER",
+                    Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()) // Random password
+                };
+                await _userRepository.AddUser(user);
+            }
+            else if (string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                // Optionally update avatar if missing
             }
 
             var token = _tokenService.GenerateAccessToken(user);

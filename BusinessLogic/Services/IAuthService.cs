@@ -12,6 +12,7 @@ namespace BusinessLogic.Services
     {
         Task<UserResponse> Register(UserRegistrationRequest request);
         Task<LoginResponse> Login(UserLoginRequest request, string ipAddress);
+        Task<LoginResponse> GoogleLogin(GoogleLoginRequest request, string ipAddress);
         Task<LoginResponse> RefreshToken(string token, string ipAddress);
         Task RevokeToken(string token, string ipAddress);
     }

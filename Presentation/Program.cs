@@ -10,6 +10,7 @@ using DataAccess.Repositories.Implementation;
 using BusinessLogic.Services;
 using BusinessLogic.Services.Implementation;
 using Presentation.Middleware;
+using DotNetEnv;
 
 namespace Presentation
 {
@@ -17,8 +18,10 @@ namespace Presentation
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            // Load .env variables
+            DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
 
+            var builder = WebApplication.CreateBuilder(args);
 
             // 1. Cấu hình db connect
             var connectionString = builder.Configuration.GetConnectionString("DbContext");
@@ -50,6 +53,16 @@ namespace Presentation
             // Service registration
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IImageService, ImageService>();
+
+            // Cloudinary
+            var cloudinaryUrl = builder.Configuration["Cloudinary:Url"];
+            if (!string.IsNullOrEmpty(cloudinaryUrl))
+            {
+                var cloudinary = new CloudinaryDotNet.Cloudinary(cloudinaryUrl);
+                cloudinary.Api.Secure = true;
+                builder.Services.AddSingleton(cloudinary);
+            }
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

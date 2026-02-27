@@ -5,13 +5,13 @@ namespace BusinessLogic.Wrappers
     public class ApiResponse<T>
     {
         public bool Succeeded { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public T? Data { get; set; }
         public int StatusCode { get; set; }
 
         public ApiResponse() { }
 
-        public ApiResponse(T data, string message = null)
+        public ApiResponse(T? data, string message = "")
         {
             Succeeded = true;
             Message = message;

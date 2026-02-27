@@ -16,8 +16,8 @@ namespace DataAccess.Entities
         public string Password { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
-        // role
         public string Role { get; set; } = "USER";
+        public string? AvatarUrl { get; set; }
         
         // Navigation property
         public ICollection<Booking> Bookings { get; set; }

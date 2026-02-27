@@ -15,5 +15,10 @@ namespace BusinessLogic.Services
         Task<LoginResponse> GoogleLogin(GoogleLoginRequest request, string ipAddress);
         Task<LoginResponse> RefreshToken(string token, string ipAddress);
         Task RevokeToken(string token, string ipAddress);
+        Task<UserResponse> GetMe(Guid userId);
+        Task<UserResponse> UpdateProfile(Guid userId, UpdateProfileRequest request);
+        Task ChangePassword(Guid userId, ChangePasswordRequest request);
+        Task ForgotPassword(ForgotPasswordRequest request);
+        Task ResetPassword(ResetPasswordRequest request);
     }
 }

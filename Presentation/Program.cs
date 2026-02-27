@@ -28,7 +28,10 @@ namespace Presentation
             var connectionString = builder.Configuration.GetConnectionString("DbContext");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connectionString)
+                options.UseSqlServer(connectionString, sqlServerOptionsAction: sqlOptions =>
+                {
+                    sqlOptions.EnableRetryOnFailure();
+                })
             );
 
             // 2. Cấu hình JWT Authentication
@@ -57,6 +60,7 @@ namespace Presentation
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IImageService, ImageService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             // Cloudinary
             var cloudinarySettings = builder.Configuration.GetSection("Cloudinary").Get<Presentation.Configs.CloudinarySettings>();

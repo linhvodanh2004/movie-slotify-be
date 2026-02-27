@@ -18,6 +18,8 @@ namespace DataAccess.Entities
         public bool IsActive { get; set; } = true;
         public string Role { get; set; } = "USER";
         public string? AvatarUrl { get; set; }
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordExpiry { get; set; }
         
         // Navigation property
         public ICollection<Booking> Bookings { get; set; }

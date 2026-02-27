@@ -67,6 +67,56 @@ namespace Presentation.Controllers
             return Ok(new ApiResponse<object>(null, "Token revoked"));
         }
 
+        [HttpGet("me")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+
+            var user = await _authService.GetMe(userId);
+            return Ok(new ApiResponse<UserResponse>(user, "User details fetched successfully."));
+        }
+
+        [HttpPut("profile")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+
+            var user = await _authService.UpdateProfile(userId, request);
+            return Ok(new ApiResponse<UserResponse>(user, "Profile updated successfully."));
+        }
+
+        [HttpPost("change-password")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+
+            await _authService.ChangePassword(userId, request);
+            return Ok(new ApiResponse<object>(null, "Password changed successfully."));
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        {
+            await _authService.ForgotPassword(request);
+            return Ok(new ApiResponse<object>(null, "If the email is registered, a reset link has been sent."));
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            await _authService.ResetPassword(request);
+            return Ok(new ApiResponse<object>(null, "Password reset successfully."));
+        }
+
         private void SetTokenCookie(string token)
         {
             var cookieOptions = new CookieOptions

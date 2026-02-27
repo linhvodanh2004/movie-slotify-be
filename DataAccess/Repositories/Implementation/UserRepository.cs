@@ -39,6 +39,21 @@ namespace DataAccess.Repositories.Implementation
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
+        public async Task<User?> GetUserById(Guid id)
+        {
+            return await _context.Users.FindAsync(id);
+        }
+
+        public async Task<User?> GetUserByEmail(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetUserByResetToken(string resetToken)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.ResetPasswordToken == resetToken);
+        }
+
         public async Task<User?> GetUserByRefreshToken(string token)
         {
             var refreshToken = await _context.RefreshTokens
@@ -56,6 +71,12 @@ namespace DataAccess.Repositories.Implementation
         public async Task UpdateRefreshToken(RefreshToken refreshToken)
         {
             _context.RefreshTokens.Update(refreshToken);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateUser(User user)
+        {
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
     }

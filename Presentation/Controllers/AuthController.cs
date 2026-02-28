@@ -21,7 +21,7 @@ namespace Presentation.Controllers
         public async Task<IActionResult> Register(UserRegistrationRequest request)
         {
             var userResponse = await _authService.Register(request);
-            return Ok(new ApiResponse<UserResponse>(userResponse, "Registration successful"));
+            return Ok(new ApiResponse<UserResponse>(userResponse, "Đăng ký thành công"));
         }
 
         [HttpPost("login")]
@@ -30,7 +30,7 @@ namespace Presentation.Controllers
             var loginResponse = await _authService.Login(request, IpAddress());
             SetTokenCookie(loginResponse.RefreshToken);
             loginResponse.RefreshToken = null; // Don't return in body
-            return Ok(new ApiResponse<LoginResponse>(loginResponse, "Login successful"));
+            return Ok(new ApiResponse<LoginResponse>(loginResponse, "Đăng nhập thành công"));
         }
 
         [HttpPost("google-login")]
@@ -39,7 +39,7 @@ namespace Presentation.Controllers
             var loginResponse = await _authService.GoogleLogin(request, IpAddress());
             SetTokenCookie(loginResponse.RefreshToken);
             loginResponse.RefreshToken = null; // Hide from body to avoid leak since it's HttpOnly
-            return Ok(new ApiResponse<LoginResponse>(loginResponse, "Google login successful"));
+            return Ok(new ApiResponse<LoginResponse>(loginResponse, "Đăng nhập Google thành công"));
         }
 
         [HttpPost("refresh-token")]
@@ -47,12 +47,12 @@ namespace Presentation.Controllers
         {
             var refreshToken = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
-                return BadRequest(new ApiResponse<object>(false, "Token is required", 400));
+                return BadRequest(new ApiResponse<object>(false, "Cần có token", 400));
 
             var response = await _authService.RefreshToken(refreshToken, IpAddress());
             SetTokenCookie(response.RefreshToken);
             response.RefreshToken = null;
-            return Ok(new ApiResponse<LoginResponse>(response, "Token refreshed"));
+            return Ok(new ApiResponse<LoginResponse>(response, "Đã làm mới token"));
         }
 
         [HttpPost("revoke")]
@@ -60,11 +60,11 @@ namespace Presentation.Controllers
         {
             var refreshToken = Request.Cookies["refreshToken"];
             if (string.IsNullOrEmpty(refreshToken))
-                return BadRequest(new ApiResponse<object>(false, "Token is required", 400));
+                return BadRequest(new ApiResponse<object>(false, "Cần có token", 400));
 
             await _authService.RevokeToken(refreshToken, IpAddress());
             Response.Cookies.Delete("refreshToken");
-            return Ok(new ApiResponse<object>(null, "Token revoked"));
+            return Ok(new ApiResponse<object>(null, "Đã thu hồi token"));
         }
 
         [HttpGet("me")]
@@ -73,10 +73,10 @@ namespace Presentation.Controllers
         {
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+                return Unauthorized(new ApiResponse<object>(null, "Thông tin token không hợp lệ."));
 
             var user = await _authService.GetMe(userId);
-            return Ok(new ApiResponse<UserResponse>(user, "User details fetched successfully."));
+            return Ok(new ApiResponse<UserResponse>(user, "Lấy thông tin người dùng thành công."));
         }
 
         [HttpPut("profile")]
@@ -85,10 +85,10 @@ namespace Presentation.Controllers
         {
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+                return Unauthorized(new ApiResponse<object>(null, "Thông tin token không hợp lệ."));
 
             var user = await _authService.UpdateProfile(userId, request);
-            return Ok(new ApiResponse<UserResponse>(user, "Profile updated successfully."));
+            return Ok(new ApiResponse<UserResponse>(user, "Cập nhật hồ sơ thành công."));
         }
 
         [HttpPost("change-password")]
@@ -97,24 +97,24 @@ namespace Presentation.Controllers
         {
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-                return Unauthorized(new ApiResponse<object>(null, "Invalid token claims."));
+                return Unauthorized(new ApiResponse<object>(null, "Thông tin token không hợp lệ."));
 
             await _authService.ChangePassword(userId, request);
-            return Ok(new ApiResponse<object>(null, "Password changed successfully."));
+            return Ok(new ApiResponse<object>(null, "Đổi mật khẩu thành công."));
         }
 
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
         {
             await _authService.ForgotPassword(request);
-            return Ok(new ApiResponse<object>(null, "If the email is registered, a reset link has been sent."));
+            return Ok(new ApiResponse<object>(null, "Nếu email đã được đăng ký, một đường dẫn cài lại mật khẩu đã được gửi."));
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             await _authService.ResetPassword(request);
-            return Ok(new ApiResponse<object>(null, "Password reset successfully."));
+            return Ok(new ApiResponse<object>(null, "Đặt lại mật khẩu thành công."));
         }
 
         private void SetTokenCookie(string token)

@@ -4,7 +4,7 @@ namespace BusinessLogic.DTOs.requests
 {
     public class GoogleLoginRequest
     {
-        [Required]
+        [Required(ErrorMessage = "IdToken không được để trống")]
         public string IdToken { get; set; }
     }
 }

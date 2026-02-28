@@ -34,11 +34,11 @@ namespace BusinessLogic.Services.Implementation
         {
             if (await _userRepository.IsEmailExists(request.Email))
             {
-                throw new BadRequestException("User with this email already exists.");
+                throw new BadRequestException("Email này đã được sử dụng.");
             }
             if (await _userRepository.IsUsernameExists(request.Username))
             {
-                throw new BadRequestException("User with this username already exists.");
+                throw new BadRequestException("Tên đăng nhập này đã tồn tại.");
             }
 
             var user = _mapper.Map<User>(request);
@@ -88,7 +88,7 @@ namespace BusinessLogic.Services.Implementation
             }
             catch (Exception)
             {
-                throw new UnauthorizedException("Invalid Google token.");
+                throw new UnauthorizedException("Token Google không hợp lệ.");
             }
 
             var user = await _userRepository.GetUserByUsername(payload.Email); // Assuming email is username
@@ -185,7 +185,7 @@ namespace BusinessLogic.Services.Implementation
         public async Task<UserResponse> GetMe(Guid userId)
         {
             var user = await _userRepository.GetUserById(userId);
-            if (user == null) throw new BadRequestException("User not found.");
+            if (user == null) throw new BadRequestException("Không tìm thấy người dùng.");
 
             return _mapper.Map<UserResponse>(user);
         }
@@ -193,7 +193,7 @@ namespace BusinessLogic.Services.Implementation
         public async Task<UserResponse> UpdateProfile(Guid userId, UpdateProfileRequest request)
         {
             var user = await _userRepository.GetUserById(userId);
-            if (user == null) throw new BadRequestException("User not found.");
+            if (user == null) throw new BadRequestException("Không tìm thấy người dùng.");
 
             user.FullName = request.FullName;
             user.PhoneNumber = request.PhoneNumber;
@@ -211,7 +211,7 @@ namespace BusinessLogic.Services.Implementation
         public async Task ChangePassword(Guid userId, ChangePasswordRequest request)
         {
             var user = await _userRepository.GetUserById(userId);
-            if (user == null) throw new BadRequestException("User not found.");
+            if (user == null) throw new BadRequestException("Không tìm thấy người dùng.");
 
             if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.Password))
             {
@@ -235,14 +235,7 @@ namespace BusinessLogic.Services.Implementation
             user.ResetPasswordExpiry = DateTime.UtcNow.AddMinutes(15);
             await _userRepository.UpdateUser(user);
 
-            var resetLink = $"http://localhost:3000/reset-password?token={token}";
-            var emailBody = $@"
-                <p>Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng bấm vào đường dẫn bên dưới để thiết lập mật khẩu mới.</p>
-                <p><a href='{resetLink}'>Tạo mật khẩu mới</a></p>
-                <p>Đường dẫn có hiệu lực trong vòng 15 phút.</p>
-            ";
-
-            await _emailService.SendEmailAsync(user.Email, "MovieSlotify: Đặt lại mật khẩu", emailBody);
+            await _emailService.SendPasswordResetEmailAsync(user.Email, token);
         }
 
         public async Task ResetPassword(ResetPasswordRequest request)

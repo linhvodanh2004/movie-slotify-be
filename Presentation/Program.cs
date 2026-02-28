@@ -51,6 +51,31 @@ namespace Presentation
                             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
                         ),
                     };
+
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = context =>
+                        {
+                            context.HandleResponse();
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            var result = System.Text.Json.JsonSerializer.Serialize(
+                                new BusinessLogic.Wrappers.ApiResponse<object>(false, "Bạn chưa đăng nhập hoặc token không hợp lệ.", StatusCodes.Status401Unauthorized),
+                                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+                            );
+                            return context.Response.WriteAsync(result);
+                        },
+                        OnForbidden = context =>
+                        {
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            context.Response.ContentType = "application/json";
+                            var result = System.Text.Json.JsonSerializer.Serialize(
+                                new BusinessLogic.Wrappers.ApiResponse<object>(false, "Bạn không có quyền truy cập tài nguyên này.", StatusCodes.Status403Forbidden),
+                                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
+                            );
+                            return context.Response.WriteAsync(result);
+                        }
+                    };
                 });
 
             // Repository registration

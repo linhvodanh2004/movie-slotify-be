@@ -25,14 +25,14 @@ namespace Presentation.Middleware
             Exception exception,
             CancellationToken cancellationToken)
         {
-            _logger.LogError(exception, "An unhandled exception has occurred.");
+            _logger.LogError(exception, "Đã xảy ra lỗi.");
 
             var (statusCode, message) = MapException(exception);
 
             // Không expose raw message nếu là lỗi 500
             var safeMessage = exception is CustomException
                 ? message
-                : "An unexpected error occurred.";
+                : "Đã xảy ra lỗi.";
 
             var response = new ApiResponse<object>
             {
@@ -68,7 +68,7 @@ namespace Presentation.Middleware
             UnauthorizedException ex => (StatusCodes.Status401Unauthorized, ex.Message),
             ForbiddenException ex => (StatusCodes.Status403Forbidden, ex.Message),
             CustomException ex => (ex.StatusCode, ex.Message),
-            _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
+            _ => (StatusCodes.Status500InternalServerError, "Đã xảy ra lỗi.")
         };
     }
 }

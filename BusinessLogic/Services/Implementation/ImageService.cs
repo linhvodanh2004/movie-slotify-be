@@ -23,7 +23,7 @@ namespace BusinessLogic.Services.Implementation
             long maxFileSize = 5 * 1024 * 1024;
             if (file.Length > maxFileSize)
             {
-                throw new BusinessLogic.Exceptions.BadRequestException("File size exceeds the 5MB limit.");
+                throw new BusinessLogic.Exceptions.BadRequestException("Kích thước file vượt quá giới hạn 5MB.");
             }
 
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
@@ -31,7 +31,7 @@ namespace BusinessLogic.Services.Implementation
 
             if (string.IsNullOrEmpty(extension) || Array.IndexOf(allowedExtensions, extension) == -1)
             {
-                throw new BusinessLogic.Exceptions.BadRequestException("Invalid file format. Allowed formats are: jpg, jpeg, png, webp.");
+                throw new BusinessLogic.Exceptions.BadRequestException("Định dạng file không hợp lệ. Các định dạng cho phép là: jpg, jpeg, png, webp.");
             }
 
             using var stream = file.OpenReadStream();

@@ -112,11 +112,15 @@ namespace Presentation
             builder.Services.AddProblemDetails();
             builder.Services.AddCors(options =>
             {
+                var clientUrl = builder.Configuration["ClientBaseUrl"] ?? "http://localhost:3000";
                 options.AddPolicy(
                     "AllowFrontend",
                     policy =>
                     {
-                        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", clientUrl)
+                              .AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials();
                     }
                 );
             });

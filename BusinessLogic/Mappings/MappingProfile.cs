@@ -10,6 +10,7 @@ namespace BusinessLogic.Mappings // Or BusinessLogic.Mappings
         {
             CreateMap<UserRegistrationRequest, User>();
             CreateMap<User, BusinessLogic.DTOs.responses.UserResponse>();
+            CreateMap<Movie, BusinessLogic.DTOs.responses.MovieResponse>();
         }
     }
 }

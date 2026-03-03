@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Presentation.Middleware;
 using DotNetEnv;
+using CloudinaryDotNet;
 
 namespace Presentation
 {
@@ -18,7 +19,10 @@ namespace Presentation
         public static void Main(string[] args)
         {
             // Load .env variables
-            DotNetEnv.Env.Load(Path.Combine(Directory.GetCurrentDirectory(), "..", ".env"));
+            DotNetEnv.Env.Load(
+                Path.Combine(Directory.GetCurrentDirectory(), "..", ".env")
+            );
+            Console.WriteLine("Current Dir: " + Directory.GetCurrentDirectory());
 
             var builder = WebApplication.CreateBuilder(args);
             var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -80,26 +84,33 @@ namespace Presentation
 
             // Repository registration
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 
             // Service registration
+            builder.Services.AddScoped<IMovieService, MovieService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IImageService, ImageService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
 
             // Cloudinary
-            var cloudinarySettings = builder.Configuration.GetSection("Cloudinary").Get<Presentation.Configs.CloudinarySettings>();
-            if (cloudinarySettings != null && !string.IsNullOrEmpty(cloudinarySettings.CloudName))
+
+            var cloudName = Environment.GetEnvironmentVariable("Cloudinary__CloudName");
+            var apiKey = Environment.GetEnvironmentVariable("Cloudinary__ApiKey");
+            var apiSecret = Environment.GetEnvironmentVariable("Cloudinary__ApiSecret");
+
+            if (string.IsNullOrEmpty(cloudName) ||
+                string.IsNullOrEmpty(apiKey) ||
+                string.IsNullOrEmpty(apiSecret))
             {
-                var account = new CloudinaryDotNet.Account(
-                    cloudinarySettings.CloudName,
-                    cloudinarySettings.ApiKey,
-                    cloudinarySettings.ApiSecret
-                );
-                var cloudinary = new CloudinaryDotNet.Cloudinary(account);
-                cloudinary.Api.Secure = true;
-                builder.Services.AddSingleton(cloudinary);
+                throw new Exception("Cloudinary environment variables are missing!");
             }
+
+            var account = new Account(cloudName, apiKey, apiSecret);
+            var cloudinary = new Cloudinary(account);
+            cloudinary.Api.Secure = true;
+
+            builder.Services.AddSingleton(cloudinary);
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

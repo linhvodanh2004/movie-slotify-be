@@ -12,5 +12,7 @@ namespace DataAccess.Entities
         
         // Navigation property
         public ICollection<Auditorium> Auditoriums { get; set; }
+        
+        public bool IsActive { get; set; } = true;
     }
 }

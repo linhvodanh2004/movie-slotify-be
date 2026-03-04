@@ -12,5 +12,7 @@ namespace DataAccess.Entities
         public Cinema Cinema { get; set; }
         
         public ICollection<Seat> Seats { get; set; }
+        
+        public bool IsActive { get; set; } = true;
     }
 }

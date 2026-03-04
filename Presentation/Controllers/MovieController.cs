@@ -51,5 +51,19 @@ namespace Presentation.Controllers
             await _movieService.DeleteMovie(id);
             return Ok(new ApiResponse<object>(null, "Movie deleted successfully"));
         }
+
+        [HttpPut("{id}/activate")]
+        public async Task<IActionResult> ActivateMovie(Guid id)
+        {
+            await _movieService.ActivateMovie(id);
+            return Ok(new ApiResponse<object>(null, "Movie activated successfully"));
+        }
+
+        [HttpPut("{id}/deactivate")]
+        public async Task<IActionResult> DeactivateMovie(Guid id)
+        {
+            await _movieService.DeactivateMovie(id);
+            return Ok(new ApiResponse<object>(null, "Movie deactivated successfully"));
+        }
     }
 }

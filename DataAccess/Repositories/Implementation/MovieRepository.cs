@@ -43,5 +43,16 @@ namespace DataAccess.Repositories.Implementation
             _context.Movies.Remove(movie);
             await _context.SaveChangesAsync();
         }
+
+        public async Task ChangeMovieStatus(Guid id, bool isActive)
+        {
+            var movie = await _context.Movies.IgnoreQueryFilters().FirstOrDefaultAsync(m => m.Id == id);
+            if (movie != null)
+            {
+                movie.IsActive = isActive;
+                _context.Movies.Update(movie);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

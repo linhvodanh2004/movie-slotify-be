@@ -1,0 +1,62 @@
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace DataAccess.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddIsActiveToEntities : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.AddColumn<bool>(
+                name: "IsActive",
+                table: "Seats",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsActive",
+                table: "Movies",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsActive",
+                table: "Cinemas",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "IsActive",
+                table: "Auditoriums",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "IsActive",
+                table: "Seats");
+
+            migrationBuilder.DropColumn(
+                name: "IsActive",
+                table: "Movies");
+
+            migrationBuilder.DropColumn(
+                name: "IsActive",
+                table: "Cinemas");
+
+            migrationBuilder.DropColumn(
+                name: "IsActive",
+                table: "Auditoriums");
+        }
+    }
+}

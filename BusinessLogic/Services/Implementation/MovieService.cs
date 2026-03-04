@@ -55,5 +55,15 @@ namespace BusinessLogic.Services.Implementation
             await _movieRepository.DeleteMovie(movie);
         }
 
+        public async Task ActivateMovie(Guid id)
+        {
+            await _movieRepository.ChangeMovieStatus(id, true);
+        }
+
+        public async Task DeactivateMovie(Guid id)
+        {
+            await _movieRepository.ChangeMovieStatus(id, false);
+        }
+
     }
 }

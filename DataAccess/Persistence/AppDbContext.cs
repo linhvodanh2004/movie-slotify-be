@@ -38,6 +38,11 @@ namespace DataAccess.Persistence
                 .WithOne(s => s.Auditorium)
                 .HasForeignKey(s => s.AuditoriumId);
 
+            modelBuilder.Entity<Movie>().HasQueryFilter(m => m.IsActive);
+            modelBuilder.Entity<Cinema>().HasQueryFilter(c => c.IsActive);
+            modelBuilder.Entity<Auditorium>().HasQueryFilter(a => a.IsActive);
+            modelBuilder.Entity<Seat>().HasQueryFilter(s => s.IsActive);
+
             modelBuilder.Entity<Showtime>()
                 .HasOne(s => s.Movie)
                 .WithMany()

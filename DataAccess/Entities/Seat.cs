@@ -18,5 +18,7 @@ namespace DataAccess.Entities
         
         public Guid AuditoriumId { get; set; }
         public Auditorium Auditorium { get; set; }
+        
+        public bool IsActive { get; set; } = true;
     }
 }

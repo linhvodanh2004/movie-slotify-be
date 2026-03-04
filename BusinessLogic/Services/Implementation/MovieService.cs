@@ -24,9 +24,9 @@ namespace BusinessLogic.Services.Implementation
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<MovieResponse>> GetAllMovies()
+        public async Task<IEnumerable<MovieResponse>> GetAllMovies(bool activeOnly = false)
         {
-            var movies = await _movieRepository.GetAllMovies();
+            var movies = await _movieRepository.GetAllMovies(activeOnly);
             return _mapper.Map<IEnumerable<MovieResponse>>(movies);
         }
         public async Task<MovieResponse> GetMovieById(Guid id)

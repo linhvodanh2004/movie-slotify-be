@@ -10,7 +10,7 @@ namespace DataAccess.Repositories
     public interface IMovieRepository
     {
         Task<Movie?> GetMovieById(Guid id);
-        Task<IEnumerable<Movie>> GetAllMovies();
+        Task<IEnumerable<Movie>> GetAllMovies(bool activeOnly = false);
         Task AddMovie(Movie movie);
         Task UpdateMovie(Movie movie);
         Task DeleteMovie(Movie movie);

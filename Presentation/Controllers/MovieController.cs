@@ -18,9 +18,9 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllMovies()
+        public async Task<IActionResult> GetAllMovies([FromQuery] bool activeOnly = false)
         {
-            var movies = await _movieService.GetAllMovies();
+            var movies = await _movieService.GetAllMovies(activeOnly);
             return Ok(new ApiResponse<IEnumerable<MovieResponse>>(movies, "Movies retrieved successfully"));
         }
 

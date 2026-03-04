@@ -13,7 +13,7 @@ namespace BusinessLogic.Services
         Task<MovieResponse> AddMovie(MovieRequest request);
         Task<MovieResponse> UpdateMovie(Guid id, MovieRequest request);
         Task<MovieResponse> GetMovieById(Guid id);
-        Task<IEnumerable<MovieResponse>> GetAllMovies();
+        Task<IEnumerable<MovieResponse>> GetAllMovies(bool activeOnly = false);
         Task DeleteMovie(Guid id);
         Task ActivateMovie(Guid id);
         Task DeactivateMovie(Guid id);

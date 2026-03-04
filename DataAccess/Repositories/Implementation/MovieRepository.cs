@@ -27,9 +27,14 @@ namespace DataAccess.Repositories.Implementation
             return await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task<IEnumerable<Movie>> GetAllMovies()
+        public async Task<IEnumerable<Movie>> GetAllMovies(bool activeOnly = false)
         {
-            return await _context.Movies.ToListAsync();
+            if (activeOnly)
+            {
+                return await _context.Movies.ToListAsync(); // Relies on the global query filter
+            }
+
+            return await _context.Movies.IgnoreQueryFilters().ToListAsync();
         }
 
         public async Task UpdateMovie(Movie movie)

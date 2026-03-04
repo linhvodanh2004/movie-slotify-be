@@ -92,6 +92,7 @@ namespace Presentation
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IImageService, ImageService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<DatabaseSeeder>();
 
             // Cloudinary
 
@@ -137,6 +138,20 @@ namespace Presentation
             });
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var seeder = services.GetRequiredService<DatabaseSeeder>();
+                    seeder.SeedAsync().Wait();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("An error occurred while seeding the database: " + ex.Message);
+                }
+            }
 
             // Configure the HTTP request pipeline.
             app.UseExceptionHandler();

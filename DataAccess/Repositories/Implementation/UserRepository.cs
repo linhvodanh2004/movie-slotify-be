@@ -39,6 +39,11 @@ namespace DataAccess.Repositories.Implementation
             return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
         public async Task<User?> GetUserById(Guid id)
         {
             return await _context.Users.FindAsync(id);

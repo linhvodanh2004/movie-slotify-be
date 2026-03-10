@@ -85,9 +85,18 @@ namespace Presentation
             // Repository registration
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+            builder.Services.AddScoped<ICinemaRepository, CinemaRepository>();
+            builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
+            builder.Services.AddScoped<ISeatRepository, SeatRepository>();
+            builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
 
             // Service registration
             builder.Services.AddScoped<IMovieService, MovieService>();
+            builder.Services.AddScoped<ICinemaService, CinemaService>();
+            builder.Services.AddScoped<IAuditoriumService, AuditoriumService>();
+            builder.Services.AddScoped<ISeatService, SeatService>();
+            builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IImageService, ImageService>();

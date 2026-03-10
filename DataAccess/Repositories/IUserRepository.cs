@@ -11,6 +11,7 @@ namespace DataAccess.Repositories
     {
         Task<bool> IsEmailExists(string email);
         Task<bool> IsUsernameExists(string username);
+        Task<IEnumerable<User>> GetAllUsers();
         Task AddUser(User user);
         Task<User?> GetUserByUsername(string username);
         Task<User?> GetUserById(Guid id);

@@ -53,8 +53,8 @@ namespace BusinessLogic.Services
                         Genre = "Tâm Lý, Tình Cảm",
                         DurationMinutes = 131,
                         ReleaseDate = new DateTime(2024, 2, 10),
-                        PosterUrl = "https://cdn.betacinemas.vn/media/console/catalog/product/m/a/maiii_1.jpg",
-                        TrailerUrl = "https://www.youtube.com/watch?v=kYv_W5ZlV8w",
+                        PosterUrl = "https://cdn-i.doisongphapluat.com.vn/media/trieu-phuong-linh/2024/02/20/sau-10-ngay-cong-chieu-phim-mai-bat-ngo-tung-poster-dac-biet.jpg",
+                        TrailerUrl = "https://youtu.be/HXWRTGbhb4U?si=-5WRHJxFt5pA6wn0",
                         IsActive = true
                     },
                     new Movie
@@ -67,8 +67,8 @@ namespace BusinessLogic.Services
                         Genre = "Chiến Tranh, Tâm Lý",
                         DurationMinutes = 100,
                         ReleaseDate = new DateTime(2024, 2, 10),
-                        PosterUrl = "https://cdn.betacinemas.vn/media/console/catalog/product/p/o/poster_-_dao_pho_piano_1.jpg",
-                        TrailerUrl = "https://www.youtube.com/watch?v=Fj-yZ212Gbw",
+                        PosterUrl = "https://upload.wikimedia.org/wikipedia/vi/2/29/%C3%81p_ph%C3%ADch_%C4%90%C3%A0o%2C_ph%E1%BB%9F_v%C3%A0_piano.jpg",
+                        TrailerUrl = "https://youtu.be/qn1t_biQigc?si=hS0t05v5y41rfv_L",
                         IsActive = true
                     },
                     new Movie
@@ -81,8 +81,8 @@ namespace BusinessLogic.Services
                         Genre = "Hài, Tình Cảm",
                         DurationMinutes = 114,
                         ReleaseDate = new DateTime(2024, 2, 10),
-                        PosterUrl = "https://cdn.betacinemas.vn/media/console/catalog/product/g/l/glcb.jpg",
-                        TrailerUrl = "https://www.youtube.com/watch?v=e_0bEaH6kE0",
+                        PosterUrl = "https://cdn.galaxycine.vn/media/2024/2/6/gap-lai-chi-bau-500_1707203931098.jpg",
+                        TrailerUrl = "https://youtu.be/_sJ0rRhTK84?si=5SBbBw7UnbA1S88q",
                         IsActive = true
                     },
                     new Movie
@@ -95,8 +95,8 @@ namespace BusinessLogic.Services
                         Genre = "Kinh Dị",
                         DurationMinutes = 108,
                         ReleaseDate = new DateTime(2023, 12, 29),
-                        PosterUrl = "https://cdn.betacinemas.vn/media/console/catalog/product/q/c/qc.jpg",
-                        TrailerUrl = "https://www.youtube.com/watch?v=zR27HnIQcwM",
+                        PosterUrl = "https://upload.wikimedia.org/wikipedia/vi/c/c3/Qu%E1%BB%B7_C%E1%BA%A9u_poster.jpg",
+                        TrailerUrl = "https://youtu.be/t4LVt_L9jWM?si=wJ7ZBwTasNp5Cbk1",
                         IsActive = true
                     },
                     new Movie
@@ -109,8 +109,8 @@ namespace BusinessLogic.Services
                         Genre = "Gia Đình, Tâm Lý",
                         DurationMinutes = 138,
                         ReleaseDate = new DateTime(2024, 4, 26),
-                        PosterUrl = "https://cdn.betacinemas.vn/media/console/catalog/product/l/m/lm7-mdk.jpg",
-                        TrailerUrl = "https://www.youtube.com/watch?v=6hJzO3O9sF0",
+                        PosterUrl = "https://upload.wikimedia.org/wikipedia/vi/d/d4/%C3%81p_ph%C3%ADch_ch%C3%ADnh_th%E1%BB%A9c_L%E1%BA%ADt_m%E1%BA%B7t_7.jpg",
+                        TrailerUrl = "https://youtu.be/d1ZHdosjNX8?si=eZ5BRC4F60TijW-8",
                         IsActive = true
                     }
                 };

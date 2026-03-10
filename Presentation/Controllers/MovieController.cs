@@ -2,6 +2,7 @@ using BusinessLogic.Services;
 using BusinessLogic.DTOs.requests;
 using BusinessLogic.DTOs.responses;
 using BusinessLogic.Wrappers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers
@@ -32,6 +33,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> AddMovie(MovieRequest request)
         {
             var movie = await _movieService.AddMovie(request);
@@ -39,6 +41,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UpdateMovie(Guid id, MovieRequest request)
         {
             var movie = await _movieService.UpdateMovie(id, request);
@@ -46,6 +49,7 @@ namespace Presentation.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteMovie(Guid id)
         {
             await _movieService.DeleteMovie(id);
@@ -53,6 +57,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}/activate")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> ActivateMovie(Guid id)
         {
             await _movieService.ActivateMovie(id);
@@ -60,6 +65,7 @@ namespace Presentation.Controllers
         }
 
         [HttpPut("{id}/deactivate")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeactivateMovie(Guid id)
         {
             await _movieService.DeactivateMovie(id);

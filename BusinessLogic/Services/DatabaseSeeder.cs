@@ -53,7 +53,7 @@ namespace BusinessLogic.Services
                         Genre = "Tâm Lý, Tình Cảm",
                         DurationMinutes = 131,
                         ReleaseDate = new DateTime(2024, 2, 10),
-                        PosterUrl = "https://cdn-i.doisongphapluat.com.vn/media/trieu-phuong-linh/2024/02/20/sau-10-ngay-cong-chieu-phim-mai-bat-ngo-tung-poster-dac-biet.jpg",
+                        PosterUrl = "https://i.ytimg.com/vi/Yz96EBNwMGw/maxresdefault.jpg",
                         TrailerUrl = "https://youtu.be/HXWRTGbhb4U?si=-5WRHJxFt5pA6wn0",
                         IsActive = true
                     },

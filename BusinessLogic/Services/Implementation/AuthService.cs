@@ -102,6 +102,7 @@ namespace BusinessLogic.Services.Implementation
                     Username = payload.Email, // Ensure username is populated
                     FullName = payload.Name,
                     AvatarUrl = payload.Picture,
+                    PhoneNumber = "Not Provided", // Provide a dummy to satisfy the DB constraint
                     IsActive = true,
                     Role = "USER",
                     Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()) // Random password

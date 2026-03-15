@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using BusinessLogic.Services;
 using BusinessLogic.Services.Implementation;
@@ -89,6 +89,7 @@ namespace Presentation
             builder.Services.AddScoped<IAuditoriumRepository, AuditoriumRepository>();
             builder.Services.AddScoped<ISeatRepository, SeatRepository>();
             builder.Services.AddScoped<IShowtimeRepository, ShowtimeRepository>();
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 
             // Service registration
             builder.Services.AddScoped<IMovieService, MovieService>();
@@ -96,6 +97,7 @@ namespace Presentation
             builder.Services.AddScoped<IAuditoriumService, AuditoriumService>();
             builder.Services.AddScoped<ISeatService, SeatService>();
             builder.Services.AddScoped<IShowtimeService, ShowtimeService>();
+            builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();

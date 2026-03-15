@@ -19,10 +19,29 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllMovies([FromQuery] bool activeOnly = false)
+        public async Task<IActionResult> GetAllMovies([FromQuery] bool activeOnly = false, [FromQuery] string title = null, [FromQuery] string genre = null)
         {
+            if (!string.IsNullOrEmpty(title) || !string.IsNullOrEmpty(genre))
+            {
+                var searchResults = await _movieService.SearchMovies(title, genre);
+                return Ok(new ApiResponse<IEnumerable<MovieResponse>>(searchResults, "Movies searched successfully"));
+            }
             var movies = await _movieService.GetAllMovies(activeOnly);
             return Ok(new ApiResponse<IEnumerable<MovieResponse>>(movies, "Movies retrieved successfully"));
+        }
+
+        [HttpGet("now-showing")]
+        public async Task<IActionResult> GetNowShowing()
+        {
+            var movies = await _movieService.GetNowShowingMovies();
+            return Ok(new ApiResponse<IEnumerable<MovieResponse>>(movies, "Now showing movies retrieved successfully"));
+        }
+
+        [HttpGet("coming-soon")]
+        public async Task<IActionResult> GetComingSoon()
+        {
+            var movies = await _movieService.GetComingSoonMovies();
+            return Ok(new ApiResponse<IEnumerable<MovieResponse>>(movies, "Coming soon movies retrieved successfully"));
         }
 
         [HttpGet("{id}")]

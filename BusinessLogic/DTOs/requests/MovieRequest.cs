@@ -17,5 +17,6 @@ namespace BusinessLogic.DTOs.requests
         public DateTime ReleaseDate { get; set; }
         public string PosterUrl { get; set; }
         public string TrailerUrl { get; set; }
+        public decimal? Rating { get; set; }
     }
 }

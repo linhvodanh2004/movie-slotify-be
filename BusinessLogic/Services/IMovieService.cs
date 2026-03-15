@@ -17,5 +17,9 @@ namespace BusinessLogic.Services
         Task DeleteMovie(Guid id);
         Task ActivateMovie(Guid id);
         Task DeactivateMovie(Guid id);
+        
+        Task<IEnumerable<MovieResponse>> SearchMovies(string title, string genre);
+        Task<IEnumerable<MovieResponse>> GetNowShowingMovies();
+        Task<IEnumerable<MovieResponse>> GetComingSoonMovies();
     }
 }

@@ -65,5 +65,34 @@ namespace BusinessLogic.Services.Implementation
             await _movieRepository.ChangeMovieStatus(id, false);
         }
 
+        public async Task<IEnumerable<MovieResponse>> SearchMovies(string title, string genre)
+        {
+            var movies = await _movieRepository.GetAllMovies(true);
+            var query = movies.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(title))
+                query = query.Where(m => m.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(genre))
+                query = query.Where(m => m.Genre.Contains(genre, StringComparison.OrdinalIgnoreCase));
+
+            return _mapper.Map<IEnumerable<MovieResponse>>(query);
+        }
+
+        public async Task<IEnumerable<MovieResponse>> GetNowShowingMovies()
+        {
+            var movies = await _movieRepository.GetAllMovies(true);
+            // In a real app, we'd check if there are active showtimes within a range.
+            // For now, let's say movies released in the last 30 days are "Now Showing".
+            var nowShowing = movies.Where(m => m.ReleaseDate <= DateTime.UtcNow && m.ReleaseDate >= DateTime.UtcNow.AddDays(-30));
+            return _mapper.Map<IEnumerable<MovieResponse>>(nowShowing);
+        }
+
+        public async Task<IEnumerable<MovieResponse>> GetComingSoonMovies()
+        {
+            var movies = await _movieRepository.GetAllMovies(true);
+            var comingSoon = movies.Where(m => m.ReleaseDate > DateTime.UtcNow);
+            return _mapper.Map<IEnumerable<MovieResponse>>(comingSoon);
+        }
     }
 }

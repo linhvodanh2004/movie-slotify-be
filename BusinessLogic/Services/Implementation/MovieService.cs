@@ -17,11 +17,13 @@ namespace BusinessLogic.Services.Implementation
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IMapper _mapper;
+        private readonly IImageService _imageService;
 
-        public MovieService(IMovieRepository movieRepository, IMapper mapper)
+        public MovieService(IMovieRepository movieRepository, IMapper mapper, IImageService imageService)
         {
             _movieRepository = movieRepository;
             _mapper = mapper;
+            _imageService = imageService;
         }
 
         public async Task<IEnumerable<MovieResponse>> GetAllMovies(bool activeOnly = false)
@@ -44,6 +46,14 @@ namespace BusinessLogic.Services.Implementation
         {
             var movie = await _movieRepository.GetMovieById(id);
             if (movie == null) throw new BadRequestException("Không tìm thấy phim.");
+
+            if (!string.IsNullOrEmpty(movie.PosterUrl) && 
+                movie.PosterUrl != request.PosterUrl && 
+                movie.PosterUrl.Contains("res.cloudinary.com"))
+            {
+                await _imageService.DeleteImageAsync(movie.PosterUrl);
+            }
+
             _mapper.Map(request, movie);
             await _movieRepository.UpdateMovie(movie);
             return _mapper.Map<MovieResponse>(movie);
@@ -52,6 +62,12 @@ namespace BusinessLogic.Services.Implementation
         {
             var movie = await _movieRepository.GetMovieById(id);
             if (movie == null) throw new BadRequestException("Không tìm thấy phim.");
+
+            if (!string.IsNullOrEmpty(movie.PosterUrl) && movie.PosterUrl.Contains("res.cloudinary.com"))
+            {
+                await _imageService.DeleteImageAsync(movie.PosterUrl);
+            }
+
             await _movieRepository.DeleteMovie(movie);
         }
 

@@ -20,14 +20,16 @@ namespace BusinessLogic.Services.Implementation
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly IImageService _imageService;
 
-        public AuthService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IEmailService emailService)
+        public AuthService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper, IConfiguration configuration, IEmailService emailService, IImageService imageService)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _mapper = mapper;
             _configuration = configuration;
             _emailService = emailService;
+            _imageService = imageService;
         }
 
         public async Task<UserResponse> Register(UserRegistrationRequest request)
@@ -201,6 +203,12 @@ namespace BusinessLogic.Services.Implementation
             
             if (!string.IsNullOrEmpty(request.AvatarUrl))
             {
+                if (!string.IsNullOrEmpty(user.AvatarUrl) && 
+                    user.AvatarUrl != request.AvatarUrl && 
+                    user.AvatarUrl.Contains("res.cloudinary.com"))
+                {
+                    await _imageService.DeleteImageAsync(user.AvatarUrl);
+                }
                 user.AvatarUrl = request.AvatarUrl;
             }
 

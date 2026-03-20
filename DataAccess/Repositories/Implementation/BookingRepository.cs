@@ -64,7 +64,8 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId)
         {
             return await _context.Tickets
-                .Where(t => t.Booking.ShowtimeId == showtimeId && t.Booking.Status != BookingStatus.Cancelled)
+                .Where(t => t.Booking.ShowtimeId == showtimeId && 
+                           (t.Booking.Status == BookingStatus.Paid || t.Booking.Status == BookingStatus.Confirmed))
                 .ToListAsync();
         }
     }

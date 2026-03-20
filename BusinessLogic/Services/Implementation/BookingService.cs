@@ -132,24 +132,47 @@ namespace BusinessLogic.Services.Implementation
         public async Task ProcessPayment(string transactionId, decimal amount, string content)
         {
             // SePay webhook often uses content (like booking code) to identify the booking
-            // Expecting content format: "slotify-ok-[BookingId]" or "slotifyok[BookingId]"
-            string bookingIdStr = content;
-            if (content.StartsWith("slotify-ok-", StringComparison.OrdinalIgnoreCase))
+            // Expecting content format: "slotify_ok_[BookingId]"
+            string bookingIdStr = "";
+            var prefixes = new[] { "slotify_ok_", "slotify-ok-", "slotifyok", "sok_", "sok" };
+            foreach (var prefix in prefixes)
             {
-                bookingIdStr = content.Substring("slotify-ok-".Length);
+                if (content.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    bookingIdStr = content.Substring(prefix.Length);
+                    break;
+                }
             }
-            else if (content.StartsWith("slotifyok", StringComparison.OrdinalIgnoreCase))
+
+            if (string.IsNullOrEmpty(bookingIdStr))
             {
-                bookingIdStr = content.Substring("slotifyok".Length);
+                // If no prefix found, the whole content might be the ID
+                bookingIdStr = content;
             }
 
             if (!Guid.TryParse(bookingIdStr, out Guid bookingId))
             {
-                // Try searching by transaction ID if that's how it's linked
-                var bookingByTx = await _bookingRepository.GetBookingByTransactionId(transactionId);
-                if (bookingByTx != null)
+                // Fuzzy match fallback for truncated IDs (usually 40 char limit at banks)
+                // e.g., "slotify_ok_efd942a35c744cffaea0d8e17602642" (truncated last char)
+                if (bookingIdStr.Length >= 20)
                 {
-                    bookingId = bookingByTx.Id;
+                    var allPending = await _bookingRepository.GetPendingBookings();
+                    var matched = allPending.FirstOrDefault(b => 
+                        b.Id.ToString("N").StartsWith(bookingIdStr, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (matched != null)
+                    {
+                        bookingId = matched.Id;
+                    }
+                    else
+                    {
+                        // Try searching by transaction ID if that's how it's linked
+                        var bookingByTx = await _bookingRepository.GetBookingByTransactionId(transactionId);
+                        if (bookingByTx != null)
+                            bookingId = bookingByTx.Id;
+                        else
+                            throw new BadRequestException("Không thể xác định đơn hàng từ nội dung thanh toán.");
+                    }
                 }
                 else
                 {

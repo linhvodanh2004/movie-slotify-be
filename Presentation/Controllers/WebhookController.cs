@@ -60,8 +60,9 @@ namespace Presentation.Controllers
             }
             catch (System.Exception ex)
             {
-                _logger.LogError(ex, "Error processing SePay webhook");
-                return BadRequest(new { status = "error", message = ex.Message });
+                _logger.LogError(ex, "Error processing SePay webhook for content: {Content}", payload.ToString());
+                // Return Ok even on error to stop SePay retries for un-processable tx
+                return Ok(new { status = "error", message = ex.Message });
             }
         }
     }

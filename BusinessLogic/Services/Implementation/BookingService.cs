@@ -132,11 +132,15 @@ namespace BusinessLogic.Services.Implementation
         public async Task ProcessPayment(string transactionId, decimal amount, string content)
         {
             // SePay webhook often uses content (like booking code) to identify the booking
-            // Expecting content format: "slotify-ok-[BookingId]"
+            // Expecting content format: "slotify-ok-[BookingId]" or "slotifyok[BookingId]"
             string bookingIdStr = content;
             if (content.StartsWith("slotify-ok-", StringComparison.OrdinalIgnoreCase))
             {
                 bookingIdStr = content.Substring("slotify-ok-".Length);
+            }
+            else if (content.StartsWith("slotifyok", StringComparison.OrdinalIgnoreCase))
+            {
+                bookingIdStr = content.Substring("slotifyok".Length);
             }
 
             if (!Guid.TryParse(bookingIdStr, out Guid bookingId))

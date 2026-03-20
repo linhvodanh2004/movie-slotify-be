@@ -28,10 +28,28 @@ namespace Presentation.Controllers
 
             try
             {
-                // SePay sends fields like 'amount_in', 'transaction_content', 'id'
-                var amountIn = payload.GetProperty("amount_in").GetDecimal();
-                var content = payload.GetProperty("transaction_content").GetString();
-                var transactionId = payload.GetProperty("id").GetString();
+                // SePay payload uses 'transferAmount', 'content', 'id'
+                // We'll be robust and check both common sets of names
+                decimal amountIn = 0;
+                if (payload.TryGetProperty("transferAmount", out var amountProp))
+                    amountIn = amountProp.GetDecimal();
+                else if (payload.TryGetProperty("amount_in", out var amountProp2))
+                    amountIn = amountProp2.GetDecimal();
+
+                string content = "";
+                if (payload.TryGetProperty("content", out var contentProp))
+                    content = contentProp.GetString();
+                else if (payload.TryGetProperty("transaction_content", out var contentProp2))
+                    content = contentProp2.GetString();
+
+                string transactionId = "";
+                if (payload.TryGetProperty("id", out var idProp))
+                {
+                    if (idProp.ValueKind == JsonValueKind.Number)
+                        transactionId = idProp.GetInt64().ToString();
+                    else
+                        transactionId = idProp.GetString();
+                }
 
                 if (string.IsNullOrEmpty(content))
                     return BadRequest("Missing transaction content.");

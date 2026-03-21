@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using DataAccess.Entities;
@@ -33,6 +34,30 @@ namespace DataAccess.Repositories.Implementation
             return await _context.Cinemas
                 .Include(c => c.Auditoriums)
                 .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<bool> ExistsByNameAsync(string normalizedName, Guid? excludeId = null)
+        {
+            return await _context.Cinemas
+                .IgnoreQueryFilters()
+                .AnyAsync(c =>
+                    (excludeId == null || c.Id != excludeId.Value) &&
+                    c.Name.Trim().ToUpper() == normalizedName);
+        }
+
+        public async Task<bool> HasAuditoriumsAsync(Guid cinemaId)
+        {
+            return await _context.Auditoriums
+                .IgnoreQueryFilters()
+                .AnyAsync(a => a.CinemaId == cinemaId);
+        }
+
+        public async Task<bool> HasShowtimesAsync(Guid cinemaId)
+        {
+            return await _context.Showtimes
+                .IgnoreQueryFilters()
+                .Include(s => s.Auditorium)
+                .AnyAsync(s => s.Auditorium.CinemaId == cinemaId);
         }
 
         public async Task<Cinema> AddAsync(Cinema cinema)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using BusinessLogic.Exceptions;
 using BusinessLogic.DTOs.requests;
 using BusinessLogic.DTOs.responses;
 using DataAccess.Entities;
@@ -40,7 +41,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var auditorium = await _auditoriumRepository.GetByIdAsync(id);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             return new AuditoriumResponse
             {
@@ -57,11 +58,15 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(request.CinemaId);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
+
+            var normalizedName = NormalizeName(request.Name);
+            if (await _auditoriumRepository.ExistsByNameAsync(request.CinemaId, normalizedName.ToUpper()))
+                throw new ValidationException("Tên phòng đã tồn tại trong rạp này.");
 
             var auditorium = new Auditorium
             {
-                Name = request.Name,
+                Name = normalizedName,
                 CinemaId = request.CinemaId,
                 IsActive = request.IsActive
             };
@@ -83,13 +88,17 @@ namespace BusinessLogic.Services.Implementation
         {
             var auditorium = await _auditoriumRepository.GetByIdAsync(id);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             var cinema = await _cinemaRepository.GetByIdAsync(request.CinemaId);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
 
-            auditorium.Name = request.Name;
+            var normalizedName = NormalizeName(request.Name);
+            if (await _auditoriumRepository.ExistsByNameAsync(request.CinemaId, normalizedName.ToUpper(), id))
+                throw new ValidationException("Tên phòng đã tồn tại trong rạp này.");
+
+            auditorium.Name = normalizedName;
             auditorium.CinemaId = request.CinemaId;
             auditorium.IsActive = request.IsActive;
 
@@ -110,7 +119,13 @@ namespace BusinessLogic.Services.Implementation
         {
             var auditorium = await _auditoriumRepository.GetByIdAsync(id);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
+
+            if (await _auditoriumRepository.HasShowtimesAsync(id))
+                throw new BadRequestException("Không thể xóa phòng đang có lịch chiếu.");
+
+            if (await _auditoriumRepository.HasSeatsAsync(id))
+                throw new BadRequestException("Không thể xóa phòng đang còn ghế.");
 
             await _auditoriumRepository.DeleteAsync(auditorium);
         }
@@ -119,7 +134,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var auditorium = await _auditoriumRepository.GetByIdAsync(id);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             auditorium.IsActive = true;
             await _auditoriumRepository.UpdateAsync(auditorium);
@@ -129,10 +144,22 @@ namespace BusinessLogic.Services.Implementation
         {
             var auditorium = await _auditoriumRepository.GetByIdAsync(id);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             auditorium.IsActive = false;
             await _auditoriumRepository.UpdateAsync(auditorium);
+        }
+
+        private static string NormalizeName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ValidationException("Tên phòng là bắt buộc.");
+
+            var normalized = value.Trim();
+            if (normalized.Length > 50)
+                throw new ValidationException("Tên phòng không được vượt quá 50 ký tự.");
+
+            return normalized;
         }
     }
 }

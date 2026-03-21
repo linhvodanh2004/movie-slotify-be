@@ -33,7 +33,29 @@ namespace DataAccess.Repositories.Implementation
 
         public async Task<Seat> GetByIdAsync(Guid id)
         {
-            return await _context.Seats.FindAsync(id);
+            return await _context.Seats
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        public async Task<bool> ExistsAsync(Guid auditoriumId, string row, int number, Guid? excludeId = null)
+        {
+            var normalizedRow = row.Trim().ToUpper();
+
+            return await _context.Seats
+                .IgnoreQueryFilters()
+                .AnyAsync(s =>
+                    s.AuditoriumId == auditoriumId &&
+                    s.Row.Trim().ToUpper() == normalizedRow &&
+                    s.Number == number &&
+                    (excludeId == null || s.Id != excludeId.Value));
+        }
+
+        public async Task<bool> HasTicketsAsync(Guid seatId)
+        {
+            return await _context.Tickets
+                .IgnoreQueryFilters()
+                .AnyAsync(t => t.SeatId == seatId);
         }
 
         public async Task<Seat> AddAsync(Seat seat)

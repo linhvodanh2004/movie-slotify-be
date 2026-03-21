@@ -56,6 +56,30 @@ namespace DataAccess.Repositories.Implementation
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
+        public async Task<bool> ExistsByNameAsync(Guid cinemaId, string normalizedName, Guid? excludeId = null)
+        {
+            return await _context.Auditoriums
+                .IgnoreQueryFilters()
+                .AnyAsync(a =>
+                    a.CinemaId == cinemaId &&
+                    (excludeId == null || a.Id != excludeId.Value) &&
+                    a.Name.Trim().ToUpper() == normalizedName);
+        }
+
+        public async Task<bool> HasSeatsAsync(Guid auditoriumId)
+        {
+            return await _context.Seats
+                .IgnoreQueryFilters()
+                .AnyAsync(s => s.AuditoriumId == auditoriumId);
+        }
+
+        public async Task<bool> HasShowtimesAsync(Guid auditoriumId)
+        {
+            return await _context.Showtimes
+                .IgnoreQueryFilters()
+                .AnyAsync(s => s.AuditoriumId == auditoriumId);
+        }
+
         public async Task<Auditorium> AddAsync(Auditorium auditorium)
         {
             await _context.Auditoriums.AddAsync(auditorium);

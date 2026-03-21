@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BusinessLogic.Exceptions;
 using BusinessLogic.DTOs.requests;
 using BusinessLogic.DTOs.responses;
 using DataAccess.Entities;
@@ -40,7 +41,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var seat = await _seatRepository.GetByIdAsync(id);
             if (seat == null)
-                throw new Exception("Seat not found");
+                throw new NotFoundException("Không tìm thấy ghế.");
 
             return new SeatResponse
             {
@@ -56,13 +57,19 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<SeatResponse> AddSeat(SeatRequest request)
         {
+            ValidateSeatRequest(request);
+
             var auditorium = await _auditoriumRepository.GetByIdAsync(request.AuditoriumId);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
+
+            var normalizedRow = NormalizeRow(request.Row);
+            if (await _seatRepository.ExistsAsync(request.AuditoriumId, normalizedRow, request.Number))
+                throw new ValidationException($"Ghế {normalizedRow}{request.Number} đã tồn tại trong phòng này.");
 
             var seat = new Seat
             {
-                Row = request.Row,
+                Row = normalizedRow,
                 Number = request.Number,
                 Type = request.Type,
                 AuditoriumId = request.AuditoriumId,
@@ -85,21 +92,46 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<IEnumerable<SeatResponse>> AddSeatsBulk(IEnumerable<SeatRequest> requests)
         {
-            var seatsToAdd = new List<Seat>();
-            // Assume all requests are for the same auditorium for efficiency check
-            var auditoriumId = requests.FirstOrDefault()?.AuditoriumId;
-            
-            if (auditoriumId.HasValue)
+            if (requests == null)
+                throw new ValidationException("Danh sách ghế không hợp lệ.");
+
+            var requestList = requests.ToList();
+            if (!requestList.Any())
+                throw new ValidationException("Danh sách ghế không được để trống.");
+
+            foreach (var req in requestList)
             {
-                var auditorium = await _auditoriumRepository.GetByIdAsync(auditoriumId.Value);
-                if (auditorium == null) throw new Exception("Auditorium not found");
+                ValidateSeatRequest(req);
             }
 
-            foreach (var req in requests)
+            var distinctAuditoriumIds = requestList.Select(r => r.AuditoriumId).Distinct().ToList();
+            if (distinctAuditoriumIds.Count != 1)
+                throw new ValidationException("Chỉ được thêm nhiều ghế cho cùng một phòng chiếu.");
+
+            var auditoriumId = distinctAuditoriumIds[0];
+            var auditorium = await _auditoriumRepository.GetByIdAsync(auditoriumId);
+            if (auditorium == null)
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
+
+            var duplicateKeys = requestList
+                .GroupBy(r => $"{NormalizeRow(r.Row)}-{r.Number}")
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key.Replace("-", string.Empty))
+                .ToList();
+
+            if (duplicateKeys.Any())
+                throw new ValidationException($"Danh sách ghế bị trùng: {string.Join(", ", duplicateKeys)}.");
+
+            var seatsToAdd = new List<Seat>();
+            foreach (var req in requestList)
             {
+                var normalizedRow = NormalizeRow(req.Row);
+                if (await _seatRepository.ExistsAsync(req.AuditoriumId, normalizedRow, req.Number))
+                    throw new ValidationException($"Ghế {normalizedRow}{req.Number} đã tồn tại trong phòng này.");
+
                 seatsToAdd.Add(new Seat
                 {
-                    Row = req.Row,
+                    Row = normalizedRow,
                     Number = req.Number,
                     Type = req.Type,
                     AuditoriumId = req.AuditoriumId,
@@ -126,15 +158,21 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<SeatResponse> UpdateSeat(Guid id, SeatRequest request)
         {
+            ValidateSeatRequest(request);
+
             var seat = await _seatRepository.GetByIdAsync(id);
             if (seat == null)
-                throw new Exception("Seat not found");
+                throw new NotFoundException("Không tìm thấy ghế.");
 
             var auditorium = await _auditoriumRepository.GetByIdAsync(request.AuditoriumId);
             if (auditorium == null)
-                throw new Exception("Auditorium not found");
+                throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
-            seat.Row = request.Row;
+            var normalizedRow = NormalizeRow(request.Row);
+            if (await _seatRepository.ExistsAsync(request.AuditoriumId, normalizedRow, request.Number, id))
+                throw new ValidationException($"Ghế {normalizedRow}{request.Number} đã tồn tại trong phòng này.");
+
+            seat.Row = normalizedRow;
             seat.Number = request.Number;
             seat.Type = request.Type;
             seat.AuditoriumId = request.AuditoriumId;
@@ -158,7 +196,10 @@ namespace BusinessLogic.Services.Implementation
         {
             var seat = await _seatRepository.GetByIdAsync(id);
             if (seat == null)
-                throw new Exception("Seat not found");
+                throw new NotFoundException("Không tìm thấy ghế.");
+
+            if (await _seatRepository.HasTicketsAsync(id))
+                throw new BadRequestException("Không thể xóa ghế đã phát sinh vé.");
 
             await _seatRepository.DeleteAsync(seat);
         }
@@ -167,7 +208,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var seat = await _seatRepository.GetByIdAsync(id);
             if (seat == null)
-                throw new Exception("Seat not found");
+                throw new NotFoundException("Không tìm thấy ghế.");
 
             seat.IsActive = true;
             await _seatRepository.UpdateAsync(seat);
@@ -177,10 +218,42 @@ namespace BusinessLogic.Services.Implementation
         {
             var seat = await _seatRepository.GetByIdAsync(id);
             if (seat == null)
-                throw new Exception("Seat not found");
+                throw new NotFoundException("Không tìm thấy ghế.");
 
             seat.IsActive = false;
             await _seatRepository.UpdateAsync(seat);
+        }
+
+        private static void ValidateSeatRequest(SeatRequest request)
+        {
+            if (request == null)
+                throw new ValidationException("Dữ liệu ghế không hợp lệ.");
+
+            NormalizeRow(request.Row);
+
+            if (request.Number < 1 || request.Number > 100)
+                throw new ValidationException("Số ghế phải nằm trong khoảng từ 1 đến 100.");
+
+            if (!Enum.IsDefined(typeof(SeatType), request.Type))
+                throw new ValidationException("Loại ghế không hợp lệ.");
+
+            if (request.AuditoriumId == Guid.Empty)
+                throw new ValidationException("Phòng chiếu là bắt buộc.");
+        }
+
+        private static string NormalizeRow(string row)
+        {
+            if (string.IsNullOrWhiteSpace(row))
+                throw new ValidationException("Hàng ghế là bắt buộc.");
+
+            var normalized = row.Trim().ToUpper();
+            if (normalized.Length > 5)
+                throw new ValidationException("Mã hàng ghế không được vượt quá 5 ký tự.");
+
+            if (normalized.Any(c => !char.IsLetterOrDigit(c)))
+                throw new ValidationException("Mã hàng ghế chỉ được chứa chữ cái và số.");
+
+            return normalized;
         }
     }
 }

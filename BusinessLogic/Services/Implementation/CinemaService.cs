@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using BusinessLogic.Exceptions;
 using BusinessLogic.DTOs.requests;
 using BusinessLogic.DTOs.responses;
 using DataAccess.Entities;
@@ -41,7 +42,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(id);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
 
             return new CinemaResponse
             {
@@ -56,12 +57,18 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<CinemaResponse> AddCinema(CinemaRequest request)
         {
-            // Simple mapping
+            var normalizedName = NormalizeRequiredText(request.Name, "Tên rạp", 100);
+            var normalizedAddress = NormalizeRequiredText(request.Address, "Địa chỉ", 200);
+            var normalizedCity = NormalizeRequiredText(request.City, "Thành phố", 100);
+
+            if (await _cinemaRepository.ExistsByNameAsync(normalizedName.ToUpper()))
+                throw new ValidationException("Tên rạp đã tồn tại.");
+
             var cinema = new Cinema
             {
-                Name = request.Name,
-                Address = request.Address,
-                City = request.City,
+                Name = normalizedName,
+                Address = normalizedAddress,
+                City = normalizedCity,
                 IsActive = request.IsActive
             };
 
@@ -82,11 +89,18 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(id);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
 
-            cinema.Name = request.Name;
-            cinema.Address = request.Address;
-            cinema.City = request.City;
+            var normalizedName = NormalizeRequiredText(request.Name, "Tên rạp", 100);
+            var normalizedAddress = NormalizeRequiredText(request.Address, "Địa chỉ", 200);
+            var normalizedCity = NormalizeRequiredText(request.City, "Thành phố", 100);
+
+            if (await _cinemaRepository.ExistsByNameAsync(normalizedName.ToUpper(), id))
+                throw new ValidationException("Tên rạp đã tồn tại.");
+
+            cinema.Name = normalizedName;
+            cinema.Address = normalizedAddress;
+            cinema.City = normalizedCity;
             cinema.IsActive = request.IsActive;
 
             await _cinemaRepository.UpdateAsync(cinema);
@@ -106,7 +120,13 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(id);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
+
+            if (await _cinemaRepository.HasShowtimesAsync(id))
+                throw new BadRequestException("Không thể xóa rạp đang có lịch chiếu.");
+
+            if (await _cinemaRepository.HasAuditoriumsAsync(id))
+                throw new BadRequestException("Không thể xóa rạp đang còn phòng chiếu.");
 
             await _cinemaRepository.DeleteAsync(cinema);
         }
@@ -115,7 +135,7 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(id);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
 
             cinema.IsActive = true;
             await _cinemaRepository.UpdateAsync(cinema);
@@ -125,10 +145,22 @@ namespace BusinessLogic.Services.Implementation
         {
             var cinema = await _cinemaRepository.GetByIdAsync(id);
             if (cinema == null)
-                throw new Exception("Cinema not found");
+                throw new NotFoundException("Không tìm thấy rạp.");
 
             cinema.IsActive = false;
             await _cinemaRepository.UpdateAsync(cinema);
+        }
+
+        private static string NormalizeRequiredText(string value, string fieldName, int maxLength)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ValidationException($"{fieldName} là bắt buộc.");
+
+            var normalized = value.Trim();
+            if (normalized.Length > maxLength)
+                throw new ValidationException($"{fieldName} không được vượt quá {maxLength} ký tự.");
+
+            return normalized;
         }
     }
 }

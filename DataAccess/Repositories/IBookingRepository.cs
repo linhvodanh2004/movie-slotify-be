@@ -13,5 +13,6 @@ namespace DataAccess.Repositories
         Task<Booking> AddBooking(Booking booking);
         Task UpdateBooking(Booking booking);
         Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId);
+        Task<IEnumerable<Booking>> GetPendingBookings();
     }
 }

@@ -64,7 +64,17 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId)
         {
             return await _context.Tickets
-                .Where(t => t.Booking.ShowtimeId == showtimeId && t.Booking.Status != BookingStatus.Cancelled)
+                .Where(t => t.Booking.ShowtimeId == showtimeId && 
+                           (t.Booking.Status == BookingStatus.Paid || t.Booking.Status == BookingStatus.Confirmed))
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetPendingBookings()
+        {
+            // Only get bookings from the last 24 hours to keep it efficient
+            var yesterday = DateTime.UtcNow.AddDays(-1);
+            return await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Pending && b.BookingDate > yesterday)
                 .ToListAsync();
         }
     }

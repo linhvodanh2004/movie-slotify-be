@@ -57,7 +57,10 @@ namespace DataAccess.Repositories.Implementation
 
         public async Task UpdateBooking(Booking booking)
         {
-            _context.Bookings.Update(booking);
+            if (_context.Entry(booking).State == EntityState.Detached)
+            {
+                _context.Bookings.Update(booking);
+            }
             await _context.SaveChangesAsync();
         }
 

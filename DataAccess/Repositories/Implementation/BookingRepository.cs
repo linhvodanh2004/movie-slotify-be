@@ -71,6 +71,44 @@ namespace DataAccess.Repositories.Implementation
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Atomic payment confirmation - no entity tracking, no concurrency exceptions.
+        /// Mirrors the NestJS `updateMany` pattern.
+        /// </summary>
+        public async Task<bool> ConfirmPayment(Guid bookingId, decimal amount, string transactionId)
+        {
+            // 1. Atomically update Booking status only if it's still Pending
+            var affected = await _context.Bookings
+                .Where(b => b.Id == bookingId && b.Status == BookingStatus.Pending)
+                .ExecuteUpdateAsync(s => s.SetProperty(b => b.Status, BookingStatus.Paid));
+
+            if (affected == 0) return false; // already paid or not found
+
+            // 2. Upsert Payment row
+            var existing = await _context.Payments
+                .FirstOrDefaultAsync(p => p.BookingId == bookingId);
+
+            if (existing == null)
+            {
+                _context.Payments.Add(new Payment
+                {
+                    BookingId = bookingId,
+                    Amount = amount,
+                    PaymentDate = DateTime.UtcNow,
+                    PaymentMethod = "SePay",
+                    TransactionId = transactionId
+                });
+            }
+            else
+            {
+                existing.TransactionId = transactionId;
+                existing.PaymentDate = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId)
         {
             return await _context.Tickets

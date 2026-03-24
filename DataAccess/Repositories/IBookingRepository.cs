@@ -13,6 +13,7 @@ namespace DataAccess.Repositories
         Task<IEnumerable<Booking>> GetBookingsByUser(Guid userId);
         Task<Booking> AddBooking(Booking booking);
         Task UpdateBooking(Booking booking);
+        Task<bool> ConfirmPayment(Guid bookingId, decimal amount, string transactionId);
         Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId);
         Task<IEnumerable<Booking>> GetPendingBookings();
     }

@@ -189,25 +189,10 @@ namespace BusinessLogic.Services.Implementation
             if (booking.TotalAmount != amount)
                 throw new BadRequestException("Số tiền thanh toán không khớp.");
 
-            booking.Status = BookingStatus.Paid;
-            
-            if (booking.Payment == null)
-            {
-                booking.Payment = new Payment
-                {
-                    Amount = amount,
-                    PaymentDate = DateTime.UtcNow,
-                    PaymentMethod = "SePay",
-                    TransactionId = transactionId
-                };
-            }
-            else
-            {
-                booking.Payment.TransactionId = transactionId;
-                booking.Payment.PaymentDate = DateTime.UtcNow;
-            }
-
-            await _bookingRepository.UpdateBooking(booking);
+            // Atomic update: no change tracker, no concurrency exception (mirrors NestJS updateMany pattern)
+            var confirmed = await _bookingRepository.ConfirmPayment(bookingId, amount, transactionId);
+            if (!confirmed)
+                throw new BadRequestException("Đơn hàng không ở trạng thái Pending hoặc đã được thanh toán trước đó.");
         }
 
         private decimal GetSeatPrice(Showtime showtime, SeatType type)

@@ -31,6 +31,13 @@ namespace DataAccess.Repositories.Implementation
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
 
+        public async Task<Booking> GetBookingForPayment(Guid id)
+        {
+            return await _context.Bookings
+                .Include(b => b.Payment)
+                .FirstOrDefaultAsync(b => b.Id == id);
+        }
+
         public async Task<Booking> GetBookingByTransactionId(string transactionId)
         {
             return await _context.Bookings

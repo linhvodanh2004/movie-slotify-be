@@ -183,7 +183,7 @@ namespace BusinessLogic.Services.Implementation
                 }
             }
 
-            var booking = await _bookingRepository.GetBookingById(bookingId);
+            var booking = await _bookingRepository.GetBookingForPayment(bookingId);
             if (booking == null) throw new BadRequestException("Không tìm thấy đơn hàng.");
 
             if (booking.TotalAmount != amount)

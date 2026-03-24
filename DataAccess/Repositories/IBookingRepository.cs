@@ -8,6 +8,7 @@ namespace DataAccess.Repositories
     public interface IBookingRepository
     {
         Task<Booking> GetBookingById(Guid id);
+        Task<Booking> GetBookingForPayment(Guid id);
         Task<Booking> GetBookingByTransactionId(string transactionId);
         Task<IEnumerable<Booking>> GetBookingsByUser(Guid userId);
         Task<Booking> AddBooking(Booking booking);

@@ -150,6 +150,9 @@ namespace BusinessLogic.Services.Implementation
                 bookingIdStr = content;
             }
 
+            // Remove any dashes if present (robustness for dash mismatch)
+            bookingIdStr = bookingIdStr.Replace("-", "");
+
             if (!Guid.TryParse(bookingIdStr, out Guid bookingId))
             {
                 // Fuzzy match fallback for truncated IDs (usually 40 char limit at banks)

@@ -105,6 +105,9 @@ namespace Presentation
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<DatabaseSeeder>();
 
+            // Background Jobs
+            builder.Services.AddHostedService<BusinessLogic.Services.BackgroundJobs.BookingExpiryService>();
+
             // Cloudinary
 
             var cloudName = Environment.GetEnvironmentVariable("Cloudinary__CloudName");

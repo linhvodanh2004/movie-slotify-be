@@ -134,7 +134,7 @@ namespace BusinessLogic.Services.Implementation
             // SePay webhook often uses content (like booking code) to identify the booking
             // Expecting content format: "slotify_ok_[BookingId]"
             string bookingIdStr = "";
-            var prefixes = new[] { "slotify_ok_", "slotify-ok-", "slotifyok", "sok_", "sok" };
+            var prefixes = new[] { "slotify", "slotifyok", "slotify_ok_", "slotify-ok-", "sok_", "sok" };
             foreach (var prefix in prefixes)
             {
                 if (content.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))

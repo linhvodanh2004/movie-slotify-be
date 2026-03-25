@@ -84,7 +84,7 @@ namespace BusinessLogic.Services.Implementation
             {
                 var settings = new GoogleJsonWebSignature.ValidationSettings
                 {
-                    Audience = new[] { _configuration["Google:ClientId"] }
+                    Audience = new[] { Environment.GetEnvironmentVariable("Google__ClientId") }
                 };
                 payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, settings);
             }

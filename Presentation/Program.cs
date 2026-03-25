@@ -64,7 +64,7 @@ namespace Presentation
                             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                             context.Response.ContentType = "application/json";
                             var result = System.Text.Json.JsonSerializer.Serialize(
-                                new BusinessLogic.Wrappers.ApiResponse<object>(false, "Bạn chưa đăng nhập hoặc token không hợp lệ.", StatusCodes.Status401Unauthorized),
+                                new BusinessLogic.Wrappers.ApiResponse<object>(false, "Yêu cầu bị từ chối do bạn chưa cung cấp Token hợp lệ hoặc rỗng.", StatusCodes.Status401Unauthorized),
                                 new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }
                             );
                             return context.Response.WriteAsync(result);
@@ -130,6 +130,24 @@ namespace Presentation
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddControllers();
+
+            // Override mặc định của [ApiController] để trả về Model Validation dạng ApiResponse
+            builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var errors = context.ModelState
+                        .Where(e => e.Value.Errors.Count > 0)
+                        .SelectMany(e => e.Value.Errors.Select(x => x.ErrorMessage))
+                        .ToList();
+
+                    var message = "Dữ liệu đầu vào không hợp lệ: " + string.Join("; ", errors);
+                    
+                    var response = new BusinessLogic.Wrappers.ApiResponse<object>(false, message, StatusCodes.Status400BadRequest);
+                    
+                    return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(response);
+                };
+            });
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -174,9 +192,9 @@ namespace Presentation
             app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
+            app.UseCors("AllowFrontend"); // ⚠️ QUAN TRỌNG: UseCors phải đặt TRƯỚC UseAuthentication
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors("AllowFrontend");
 
             app.MapControllers();
 

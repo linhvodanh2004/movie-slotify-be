@@ -38,12 +38,14 @@ namespace BusinessLogic.Services.Implementation
         }
         public async Task<MovieResponse> AddMovie(MovieRequest request)
         {
+            ValidateMovieRequest(request);
             var movie = _mapper.Map<Movie>(request);
             await _movieRepository.AddMovie(movie);
             return _mapper.Map<MovieResponse>(movie);
         }
         public async Task<MovieResponse> UpdateMovie(Guid id, MovieRequest request)
         {
+            ValidateMovieRequest(request);
             var movie = await _movieRepository.GetMovieById(id);
             if (movie == null) throw new BadRequestException("Không tìm thấy phim.");
 
@@ -112,6 +114,41 @@ namespace BusinessLogic.Services.Implementation
             var movies = await _movieRepository.GetAllMovies(true);
             var comingSoon = movies.Where(m => m.ReleaseDate > DateTime.UtcNow);
             return _mapper.Map<IEnumerable<MovieResponse>>(comingSoon);
+        }
+
+        private static void ValidateMovieRequest(MovieRequest request)
+        {
+            if (request == null)
+                throw new ValidationException("Dữ liệu phim không hợp lệ.");
+
+            if (string.IsNullOrWhiteSpace(request.Title))
+                throw new ValidationException("Tên phim là bắt buộc.");
+            request.Title = request.Title.Trim();
+
+            if (string.IsNullOrWhiteSpace(request.Director))
+                throw new ValidationException("Đạo diễn là bắt buộc.");
+            request.Director = request.Director.Trim();
+
+            if (string.IsNullOrWhiteSpace(request.Cast))
+                throw new ValidationException("Diễn viên là bắt buộc.");
+            request.Cast = request.Cast.Trim();
+
+            if (string.IsNullOrWhiteSpace(request.Genre))
+                throw new ValidationException("Thể loại là bắt buộc.");
+            request.Genre = request.Genre.Trim();
+
+            if (request.DurationMinutes <= 0)
+                throw new ValidationException("Thời lượng phim phải lớn hơn 0.");
+
+            if (request.ReleaseDate == default)
+                throw new ValidationException("Ngày khởi chiếu không hợp lệ.");
+
+            if (string.IsNullOrWhiteSpace(request.PosterUrl))
+                throw new ValidationException("Poster là bắt buộc.");
+            request.PosterUrl = request.PosterUrl.Trim();
+
+            if (!string.IsNullOrWhiteSpace(request.TrailerUrl))
+                request.TrailerUrl = request.TrailerUrl.Trim();
         }
     }
 }

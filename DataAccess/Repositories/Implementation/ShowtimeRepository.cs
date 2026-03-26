@@ -41,7 +41,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Showtime>> GetByMovieIdAsync(Guid movieId)
         {
             return await _context.Showtimes
-                .Where(s => s.MovieId == movieId && s.StartTime >= DateTime.UtcNow)
+                .Where(s => s.MovieId == movieId && s.EndTime > DateTime.UtcNow)
                 .Include(s => s.Auditorium)
                 .ThenInclude(a => a.Cinema)
                 .OrderBy(s => s.StartTime)
@@ -54,7 +54,7 @@ namespace DataAccess.Repositories.Implementation
                 .Include(s => s.Movie)
                 .Include(s => s.Auditorium)
                 .ThenInclude(a => a.Cinema)
-                .Where(s => s.Auditorium.CinemaId == cinemaId && s.StartTime >= DateTime.UtcNow)
+                .Where(s => s.Auditorium.CinemaId == cinemaId && s.EndTime > DateTime.UtcNow)
                 .OrderBy(s => s.StartTime)
                 .ToListAsync();
         }

@@ -93,7 +93,15 @@ namespace BusinessLogic.Services.Implementation
                 throw new UnauthorizedException("Token Google không hợp lệ.");
             }
 
-            var user = await _userRepository.GetUserByUsername(payload.Email); // Assuming email is username
+            if (string.IsNullOrWhiteSpace(payload.Email))
+            {
+                throw new UnauthorizedException("Tài khoản Google không trả về email hợp lệ.");
+            }
+
+            // Ưu tiên map theo email để hỗ trợ case:
+            // User đã đăng ký bằng form thường (username != email) rồi login Google cùng email.
+            var user = await _userRepository.GetUserByEmail(payload.Email);
+            user ??= await _userRepository.GetUserByUsername(payload.Email);
             
             if (user == null)
             {
@@ -111,9 +119,27 @@ namespace BusinessLogic.Services.Implementation
                 };
                 await _userRepository.AddUser(user);
             }
-            else if (string.IsNullOrEmpty(user.AvatarUrl))
+            else
             {
-                // Optionally update avatar if missing
+                if (!user.IsActive)
+                {
+                    throw new UnauthorizedException("Tài khoản đã bị vô hiệu hóa.");
+                }
+
+                // Đồng bộ profile nhẹ từ Google nếu user chưa có dữ liệu.
+                if (string.IsNullOrWhiteSpace(user.FullName) && !string.IsNullOrWhiteSpace(payload.Name))
+                {
+                    user.FullName = payload.Name;
+                }
+                if (string.IsNullOrWhiteSpace(user.AvatarUrl) && !string.IsNullOrWhiteSpace(payload.Picture))
+                {
+                    user.AvatarUrl = payload.Picture;
+                }
+                if (string.IsNullOrWhiteSpace(user.PhoneNumber))
+                {
+                    user.PhoneNumber = "Not Provided";
+                }
+                await _userRepository.UpdateUser(user);
             }
 
             var token = _tokenService.GenerateAccessToken(user);

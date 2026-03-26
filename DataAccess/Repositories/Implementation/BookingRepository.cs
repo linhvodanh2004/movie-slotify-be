@@ -20,6 +20,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<Booking> GetBookingById(Guid id)
         {
             return await _context.Bookings
+                .Include(b => b.User)
                 .Include(b => b.Tickets)
                     .ThenInclude(t => t.Seat)
                 .Include(b => b.Showtime)

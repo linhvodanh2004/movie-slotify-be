@@ -1,3 +1,4 @@
+using BusinessLogic.DTOs.Notifications;
 using System.Threading.Tasks;
 
 namespace BusinessLogic.Services
@@ -6,5 +7,7 @@ namespace BusinessLogic.Services
     {
         Task SendEmailAsync(string toEmail, string subject, string body);
         Task SendPasswordResetEmailAsync(string toEmail, string resetToken);
+        Task SendBookingConfirmationEmailAsync(BookingConfirmationEmailRequest request);
+        string GetCurrentSmtpUser();
     }
 }

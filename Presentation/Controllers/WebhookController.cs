@@ -29,18 +29,16 @@ namespace Presentation.Controllers
             try
             {
                 // SePay payload uses 'transferAmount', 'content', 'id'
-                // We'll be robust and check both common sets of names
-                decimal amountIn = 0;
-                if (payload.TryGetProperty("transferAmount", out var amountProp))
-                    amountIn = amountProp.GetDecimal();
-                else if (payload.TryGetProperty("amount_in", out var amountProp2))
-                    amountIn = amountProp2.GetDecimal();
+                // Be tolerant for number/string payload variants
+                decimal amountIn = ReadDecimal(payload, "transferAmount")
+                    ?? ReadDecimal(payload, "amount_in")
+                    ?? 0;
 
                 string content = "";
                 if (payload.TryGetProperty("content", out var contentProp))
-                    content = contentProp.GetString();
+                    content = contentProp.GetString() ?? "";
                 else if (payload.TryGetProperty("transaction_content", out var contentProp2))
-                    content = contentProp2.GetString();
+                    content = contentProp2.GetString() ?? "";
 
                 string transactionId = "";
                 if (payload.TryGetProperty("id", out var idProp))
@@ -48,11 +46,14 @@ namespace Presentation.Controllers
                     if (idProp.ValueKind == JsonValueKind.Number)
                         transactionId = idProp.GetInt64().ToString();
                     else
-                        transactionId = idProp.GetString();
+                        transactionId = idProp.GetString() ?? "";
                 }
 
                 if (string.IsNullOrEmpty(content))
+                {
+                    _logger.LogWarning("SePay webhook missing transaction content. Payload: {Payload}", payload.ToString());
                     return BadRequest("Missing transaction content.");
+                }
 
                 await _bookingService.ProcessPayment(transactionId, amountIn, content);
                 
@@ -64,6 +65,14 @@ namespace Presentation.Controllers
                 // Return Ok even on error to stop SePay retries for un-processable tx
                 return Ok(new { status = "error", message = ex.Message });
             }
+        }
+
+        private static decimal? ReadDecimal(JsonElement payload, string propertyName)
+        {
+            if (!payload.TryGetProperty(propertyName, out var prop)) return null;
+            if (prop.ValueKind == JsonValueKind.Number && prop.TryGetDecimal(out var numberValue)) return numberValue;
+            if (prop.ValueKind == JsonValueKind.String && decimal.TryParse(prop.GetString(), out var stringValue)) return stringValue;
+            return null;
         }
     }
 }

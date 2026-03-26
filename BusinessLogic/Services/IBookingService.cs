@@ -13,5 +13,7 @@ namespace BusinessLogic.Services
         Task<BookingResponse> GetBookingDetails(Guid bookingId);
         Task<IEnumerable<BookingResponse>> GetUserBookings(Guid userId);
         Task ProcessPayment(string transactionId, decimal amount, string content);
+        Task SendBookingConfirmationEmailForBooking(Guid bookingId);
+        Task SendBookingConfirmationEmailForUser(Guid userId, Guid bookingId);
     }
 }

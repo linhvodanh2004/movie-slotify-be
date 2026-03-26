@@ -60,5 +60,25 @@ namespace Presentation.Controllers
             var bookings = await _bookingService.GetUserBookings(userId);
             return Ok(new ApiResponse<IEnumerable<BookingResponse>>(bookings, "Danh sách đơn hàng."));
         }
+
+        [HttpPost("{id}/send-confirmation-email")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> SendConfirmationEmail(Guid id)
+        {
+            await _bookingService.SendBookingConfirmationEmailForBooking(id);
+            return Ok(new ApiResponse<object>(null, "Đã gửi email xác nhận đặt vé."));
+        }
+
+        [HttpPost("{id}/send-my-confirmation-email")]
+        [Authorize]
+        public async Task<IActionResult> SendMyConfirmationEmail(Guid id)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return Unauthorized(new ApiResponse<object>(null, "Người dùng không hợp lệ."));
+
+            await _bookingService.SendBookingConfirmationEmailForUser(userId, id);
+            return Ok(new ApiResponse<object>(null, "Đã gửi email xác nhận đặt vé."));
+        }
     }
 }

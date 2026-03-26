@@ -1,4 +1,5 @@
 using AutoMapper;
+using BusinessLogic.Exceptions;
 using BusinessLogic.DTOs.responses;
 using DataAccess.Repositories;
 
@@ -26,14 +27,14 @@ namespace BusinessLogic.Services.Implementation
             var user = await _userRepository.GetUserById(userId);
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new NotFoundException("Không tìm thấy người dùng.");
             }
 
             // Simple validation for roles, could be expanded
             var validRoles = new[] { "USER", "ADMIN" };
             if (!validRoles.Contains(newRole.ToUpper()))
             {
-                throw new Exception("Invalid role specified");
+                throw new ValidationException("Vai trò không hợp lệ. Chỉ chấp nhận USER hoặc ADMIN.");
             }
 
             user.Role = newRole.ToUpper();

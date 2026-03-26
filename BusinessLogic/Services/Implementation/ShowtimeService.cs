@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BusinessLogic.DTOs.requests;
 using BusinessLogic.DTOs.responses;
+using BusinessLogic.Exceptions;
 using DataAccess.Entities;
 using DataAccess.Repositories;
 
@@ -47,25 +48,27 @@ namespace BusinessLogic.Services.Implementation
         {
             var showtime = await _showtimeRepository.GetByIdAsync(id);
             if (showtime == null)
-                throw new Exception("Showtime not found");
+                throw new NotFoundException("Không tìm thấy lịch chiếu.");
 
             return MapToResponse(showtime);
         }
 
         public async Task<ShowtimeResponse> AddShowtime(ShowtimeRequest request)
         {
+            ValidateShowtimeRequest(request);
+
             var movie = await _movieRepository.GetMovieById(request.MovieId);
-            if (movie == null) throw new Exception("Movie not found");
+            if (movie == null) throw new NotFoundException("Không tìm thấy phim.");
 
             var auditorium = await _auditoriumRepository.GetByIdAsync(request.AuditoriumId);
-            if (auditorium == null) throw new Exception("Auditorium not found");
+            if (auditorium == null) throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             // Auto-calculate EndTime = StartTime + DurationMinutes + 10 min buffer
             var endTime = request.StartTime.AddMinutes(movie.DurationMinutes + 10);
 
             var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, endTime);
             if (hasConflict)
-                throw new Exception("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
+                throw new ValidationException("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
 
             var showtime = new Showtime
             {
@@ -86,19 +89,24 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<ShowtimeResponse> UpdateShowtime(Guid id, ShowtimeRequest request)
         {
+            ValidateShowtimeRequest(request);
+
             var showtime = await _showtimeRepository.GetByIdAsync(id);
             if (showtime == null)
-                throw new Exception("Showtime not found");
+                throw new NotFoundException("Không tìm thấy lịch chiếu.");
 
             var movie = await _movieRepository.GetMovieById(request.MovieId);
-            if (movie == null) throw new Exception("Movie not found");
+            if (movie == null) throw new NotFoundException("Không tìm thấy phim.");
+            
+            var auditorium = await _auditoriumRepository.GetByIdAsync(request.AuditoriumId);
+            if (auditorium == null) throw new NotFoundException("Không tìm thấy phòng chiếu.");
 
             // Auto-calculate EndTime = StartTime + DurationMinutes + 10 min buffer
             var endTime = request.StartTime.AddMinutes(movie.DurationMinutes + 10);
 
             var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, endTime, id);
             if (hasConflict)
-                throw new Exception("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
+                throw new ValidationException("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
 
             showtime.StartTime = request.StartTime;
             showtime.EndTime = endTime;
@@ -117,10 +125,10 @@ namespace BusinessLogic.Services.Implementation
         {
             var showtime = await _showtimeRepository.GetByIdAsync(id);
             if (showtime == null)
-                throw new Exception("Showtime not found");
+                throw new NotFoundException("Không tìm thấy lịch chiếu.");
 
             if (await _showtimeRepository.HasBookingsAsync(id))
-                throw new Exception("Không thể xóa lịch chiếu đã có người đặt vé.");
+                throw new BadRequestException("Không thể xóa lịch chiếu đã có người đặt vé.");
 
             await _showtimeRepository.DeleteAsync(showtime);
         }
@@ -143,6 +151,30 @@ namespace BusinessLogic.Services.Implementation
                 CinemaId = s.Auditorium?.CinemaId ?? Guid.Empty,
                 CinemaName = s.Auditorium?.Cinema?.Name ?? "Unknown"
             };
+        }
+
+        private static void ValidateShowtimeRequest(ShowtimeRequest request)
+        {
+            if (request == null)
+                throw new ValidationException("Dữ liệu lịch chiếu không hợp lệ.");
+
+            if (request.MovieId == Guid.Empty)
+                throw new ValidationException("Phim là bắt buộc.");
+
+            if (request.AuditoriumId == Guid.Empty)
+                throw new ValidationException("Phòng chiếu là bắt buộc.");
+
+            if (request.StartTime == default)
+                throw new ValidationException("Thời gian bắt đầu là bắt buộc.");
+
+            if (request.StandardPrice < 0 || request.VipPrice < 0 || request.CouplePrice < 0)
+                throw new ValidationException("Giá vé không được nhỏ hơn 0.");
+
+            if (request.VipPrice < request.StandardPrice)
+                throw new ValidationException("Giá VIP không được nhỏ hơn giá Standard.");
+
+            if (request.CouplePrice < request.StandardPrice)
+                throw new ValidationException("Giá Couple không được nhỏ hơn giá Standard.");
         }
     }
 }

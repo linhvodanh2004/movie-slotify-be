@@ -16,5 +16,10 @@ namespace DataAccess.Repositories
         Task<bool> ConfirmPayment(Guid bookingId, decimal amount, string transactionId);
         Task<IEnumerable<Ticket>> GetTicketsByShowtime(Guid showtimeId);
         Task<IEnumerable<Booking>> GetPendingBookings();
+
+        Task<int> CountPaidOrConfirmedTicketsSoldAsync(System.DateTime startUtc);
+        Task<int> CountPaidOrConfirmedBookingsAsync(System.DateTime startUtc);
+        Task<decimal> SumPaidOrConfirmedRevenueAsync(System.DateTime startUtc);
+        Task<IEnumerable<Booking>> GetRecentPaidOrConfirmedBookingsAsync(System.DateTime startUtc, int limit);
     }
 }

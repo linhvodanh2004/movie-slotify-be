@@ -126,5 +126,47 @@ namespace DataAccess.Repositories.Implementation
                 .Where(b => b.Status == BookingStatus.Pending && b.BookingDate > yesterday)
                 .ToListAsync();
         }
+
+        public async Task<int> CountPaidOrConfirmedTicketsSoldAsync(DateTime startUtc)
+        {
+            return await _context.Tickets
+                .Where(t => t.Booking.Status == BookingStatus.Paid || t.Booking.Status == BookingStatus.Confirmed)
+                .Where(t => t.Booking.BookingDate >= startUtc)
+                .CountAsync();
+        }
+
+        public async Task<int> CountPaidOrConfirmedBookingsAsync(DateTime startUtc)
+        {
+            return await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Paid || b.Status == BookingStatus.Confirmed)
+                .Where(b => b.BookingDate >= startUtc)
+                .CountAsync();
+        }
+
+        public async Task<decimal> SumPaidOrConfirmedRevenueAsync(DateTime startUtc)
+        {
+            return await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Paid || b.Status == BookingStatus.Confirmed)
+                .Where(b => b.BookingDate >= startUtc)
+                .SumAsync(b => b.TotalAmount);
+        }
+
+        public async Task<IEnumerable<Booking>> GetRecentPaidOrConfirmedBookingsAsync(DateTime startUtc, int limit)
+        {
+            return await _context.Bookings
+                .Where(b => b.Status == BookingStatus.Paid || b.Status == BookingStatus.Confirmed)
+                .Where(b => b.BookingDate >= startUtc)
+                .OrderByDescending(b => b.BookingDate)
+                .Take(limit)
+                .Include(b => b.User)
+                .Include(b => b.Tickets)
+                    .ThenInclude(t => t.Seat)
+                .Include(b => b.Showtime)
+                    .ThenInclude(s => s.Movie)
+                .Include(b => b.Showtime)
+                    .ThenInclude(s => s.Auditorium)
+                        .ThenInclude(a => a.Cinema)
+                .ToListAsync();
+        }
     }
 }

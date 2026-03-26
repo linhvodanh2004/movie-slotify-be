@@ -15,5 +15,6 @@ namespace BusinessLogic.Services
         Task ProcessPayment(string transactionId, decimal amount, string content);
         Task SendBookingConfirmationEmailForBooking(Guid bookingId);
         Task SendBookingConfirmationEmailForUser(Guid userId, Guid bookingId);
+        Task<AdminDashboardResponse> GetAdminDashboardAsync(int recentLimit = 6);
     }
 }

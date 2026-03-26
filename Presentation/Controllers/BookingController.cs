@@ -80,5 +80,13 @@ namespace Presentation.Controllers
             await _bookingService.SendBookingConfirmationEmailForUser(userId, id);
             return Ok(new ApiResponse<object>(null, "Đã gửi email xác nhận đặt vé."));
         }
+
+        [HttpGet("admin/dashboard")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<IActionResult> GetAdminDashboard([FromQuery] int recentLimit = 6)
+        {
+            var data = await _bookingService.GetAdminDashboardAsync(recentLimit);
+            return Ok(new ApiResponse<AdminDashboardResponse>(data, "Thống kê dashboard admin."));
+        }
     }
 }

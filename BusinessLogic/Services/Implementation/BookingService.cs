@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace BusinessLogic.Services.Implementation
 {
     public class BookingService : IBookingService
     {
+        private static readonly ConcurrentDictionary<Guid, DateTime> RecentConfirmationEmails = new();
+        private static readonly TimeSpan ConfirmationEmailDedupWindow = TimeSpan.FromMinutes(3);
         private readonly IBookingRepository _bookingRepository;
         private readonly IShowtimeRepository _showtimeRepository;
         private readonly ISeatRepository _seatRepository;
@@ -138,6 +141,26 @@ namespace BusinessLogic.Services.Implementation
             return results;
         }
 
+        public async Task<AdminDashboardResponse> GetAdminDashboardAsync(int recentLimit = 6)
+        {
+            var startUtc = DateTime.UtcNow.Date;
+
+            var ticketsSoldToday = await _bookingRepository.CountPaidOrConfirmedTicketsSoldAsync(startUtc);
+            var paidBookingsTodayCount = await _bookingRepository.CountPaidOrConfirmedBookingsAsync(startUtc);
+            var revenueToday = await _bookingRepository.SumPaidOrConfirmedRevenueAsync(startUtc);
+
+            var recentBookings = await _bookingRepository.GetRecentPaidOrConfirmedBookingsAsync(startUtc, recentLimit);
+            var recentPaidBookings = recentBookings.Select(MapBookingToResponse).ToList();
+
+            return new AdminDashboardResponse
+            {
+                TicketsSoldToday = ticketsSoldToday,
+                PaidBookingsTodayCount = paidBookingsTodayCount,
+                RevenueToday = revenueToday,
+                RecentPaidBookings = recentPaidBookings
+            };
+        }
+
         public async Task ProcessPayment(string transactionId, decimal amount, string content)
         {
             var bookingId = await ResolveBookingIdAsync(transactionId, content);
@@ -203,6 +226,14 @@ namespace BusinessLogic.Services.Implementation
 
             if (booking.User == null || string.IsNullOrWhiteSpace(booking.User.Email))
                 throw new BadRequestException("Don dat ve chua co email nguoi nhan.");
+
+            if (!TryAcquireConfirmationEmailSlot(booking.Id))
+            {
+                _logger.LogInformation(
+                    "Skip duplicate booking confirmation email for booking {BookingId} from user fallback endpoint.",
+                    booking.Id);
+                return;
+            }
 
             var emailRequest = BuildBookingConfirmationEmailRequest(booking);
             await _emailService.SendBookingConfirmationEmailAsync(emailRequest);
@@ -277,6 +308,14 @@ namespace BusinessLogic.Services.Implementation
                     return;
                 }
 
+                if (!TryAcquireConfirmationEmailSlot(booking.Id))
+                {
+                    _logger.LogInformation(
+                        "Skip duplicate booking confirmation email for booking {BookingId}.",
+                        booking.Id);
+                    return;
+                }
+
                 var emailRequest = BuildBookingConfirmationEmailRequest(booking);
                 await _emailService.SendBookingConfirmationEmailAsync(emailRequest);
             }
@@ -331,9 +370,9 @@ namespace BusinessLogic.Services.Implementation
         {
             return seatType switch
             {
-                SeatType.VIP => "VIP",
-                SeatType.Couple => "Couple",
-                _ => "Standard"
+                SeatType.VIP => "Ghế VIP",
+                SeatType.Couple => "Ghế đôi",
+                _ => "Ghế thường"
             };
         }
 
@@ -352,12 +391,50 @@ namespace BusinessLogic.Services.Implementation
             };
         }
 
+        private static BookingResponse MapBookingToResponse(Booking booking)
+        {
+            return new BookingResponse
+            {
+                Id = booking.Id,
+                BookingDate = booking.BookingDate,
+                TotalAmount = booking.TotalAmount,
+                Status = booking.Status.ToString(),
+                MovieTitle = booking.Showtime?.Movie?.Title ?? string.Empty,
+                CinemaName = booking.Showtime?.Auditorium?.Cinema?.Name ?? string.Empty,
+                AuditoriumName = booking.Showtime?.Auditorium?.Name ?? string.Empty,
+                StartTime = booking.Showtime?.StartTime ?? booking.BookingDate,
+                Tickets = booking.Tickets?
+                    .Select(t => new TicketResponse
+                    {
+                        Id = t.Id,
+                        SeatRow = t.Seat?.Row ?? string.Empty,
+                        SeatNumber = t.Seat?.Number ?? 0,
+                        SeatType = t.Seat?.Type.ToString() ?? string.Empty,
+                        Price = t.Price
+                    })
+                    .ToList() ?? new List<TicketResponse>()
+            };
+        }
+
         private static void EnsureShowtimeStillBookable(Showtime showtime)
         {
             if (showtime.EndTime <= DateTime.UtcNow)
             {
                 throw new BadRequestException("Suat chieu da ket thuc, khong the dat ve.");
             }
+        }
+
+        private static bool TryAcquireConfirmationEmailSlot(Guid bookingId)
+        {
+            var now = DateTime.UtcNow;
+            if (RecentConfirmationEmails.TryGetValue(bookingId, out var lastSentAt)
+                && now - lastSentAt < ConfirmationEmailDedupWindow)
+            {
+                return false;
+            }
+
+            RecentConfirmationEmails[bookingId] = now;
+            return true;
         }
     }
 }

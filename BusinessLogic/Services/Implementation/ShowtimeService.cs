@@ -54,23 +54,23 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<ShowtimeResponse> AddShowtime(ShowtimeRequest request)
         {
-            if (request.EndTime <= request.StartTime)
-                throw new Exception("EndTime must be after StartTime");
-
             var movie = await _movieRepository.GetMovieById(request.MovieId);
             if (movie == null) throw new Exception("Movie not found");
 
             var auditorium = await _auditoriumRepository.GetByIdAsync(request.AuditoriumId);
             if (auditorium == null) throw new Exception("Auditorium not found");
 
-            var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, request.EndTime);
+            // Auto-calculate EndTime = StartTime + DurationMinutes + 10 min buffer
+            var endTime = request.StartTime.AddMinutes(movie.DurationMinutes + 10);
+
+            var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, endTime);
             if (hasConflict)
                 throw new Exception("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
 
             var showtime = new Showtime
             {
                 StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                EndTime = endTime,
                 StandardPrice = request.StandardPrice,
                 VipPrice = request.VipPrice,
                 CouplePrice = request.CouplePrice,
@@ -86,19 +86,22 @@ namespace BusinessLogic.Services.Implementation
 
         public async Task<ShowtimeResponse> UpdateShowtime(Guid id, ShowtimeRequest request)
         {
-            if (request.EndTime <= request.StartTime)
-                throw new Exception("EndTime must be after StartTime");
-
             var showtime = await _showtimeRepository.GetByIdAsync(id);
             if (showtime == null)
                 throw new Exception("Showtime not found");
 
-            var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, request.EndTime, id);
+            var movie = await _movieRepository.GetMovieById(request.MovieId);
+            if (movie == null) throw new Exception("Movie not found");
+
+            // Auto-calculate EndTime = StartTime + DurationMinutes + 10 min buffer
+            var endTime = request.StartTime.AddMinutes(movie.DurationMinutes + 10);
+
+            var hasConflict = await _showtimeRepository.HasConflictAsync(request.AuditoriumId, request.StartTime, endTime, id);
             if (hasConflict)
                 throw new Exception("Phòng chiếu này đã có lịch chiếu trong khoảng thời gian này.");
 
             showtime.StartTime = request.StartTime;
-            showtime.EndTime = request.EndTime;
+            showtime.EndTime = endTime;
             showtime.StandardPrice = request.StandardPrice;
             showtime.VipPrice = request.VipPrice;
             showtime.CouplePrice = request.CouplePrice;
@@ -115,6 +118,9 @@ namespace BusinessLogic.Services.Implementation
             var showtime = await _showtimeRepository.GetByIdAsync(id);
             if (showtime == null)
                 throw new Exception("Showtime not found");
+
+            if (await _showtimeRepository.HasBookingsAsync(id))
+                throw new Exception("Không thể xóa lịch chiếu đã có người đặt vé.");
 
             await _showtimeRepository.DeleteAsync(showtime);
         }

@@ -15,5 +15,6 @@ namespace DataAccess.Repositories
         Task UpdateAsync(Showtime showtime);
         Task DeleteAsync(Showtime showtime);
         Task<bool> HasConflictAsync(Guid auditoriumId, DateTime startTime, DateTime endTime, Guid? excludeShowtimeId = null);
+        Task<bool> HasBookingsAsync(Guid showtimeId);
     }
 }

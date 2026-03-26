@@ -20,6 +20,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Seat>> GetByAuditoriumIdAsync(Guid auditoriumId, bool includeInactive = false)
         {
             var query = _context.Seats
+                .IgnoreQueryFilters()
                 .Where(s => s.AuditoriumId == auditoriumId)
                 .AsQueryable();
 

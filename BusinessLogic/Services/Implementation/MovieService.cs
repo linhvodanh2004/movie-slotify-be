@@ -63,6 +63,9 @@ namespace BusinessLogic.Services.Implementation
             var movie = await _movieRepository.GetMovieById(id);
             if (movie == null) throw new BadRequestException("Không tìm thấy phim.");
 
+            if (await _movieRepository.HasShowtimesAsync(id))
+                throw new BadRequestException("Không thể xóa phim đang có lịch chiếu.");
+
             if (!string.IsNullOrEmpty(movie.PosterUrl) && movie.PosterUrl.Contains("res.cloudinary.com"))
             {
                 await _imageService.DeleteImageAsync(movie.PosterUrl);

@@ -15,5 +15,6 @@ namespace DataAccess.Repositories
         Task UpdateMovie(Movie movie);
         Task DeleteMovie(Movie movie);
         Task ChangeMovieStatus(Guid id, bool isActive);
+        Task<bool> HasShowtimesAsync(Guid movieId);
     }
 }

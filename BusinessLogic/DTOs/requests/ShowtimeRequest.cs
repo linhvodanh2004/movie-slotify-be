@@ -9,9 +9,6 @@ namespace BusinessLogic.DTOs.requests
         public DateTime StartTime { get; set; }
 
         [Required]
-        public DateTime EndTime { get; set; }
-
-        [Required]
         [Range(0, 10000000)]
         public decimal StandardPrice { get; set; }
 
@@ -30,3 +27,4 @@ namespace BusinessLogic.DTOs.requests
         public Guid AuditoriumId { get; set; }
     }
 }
+

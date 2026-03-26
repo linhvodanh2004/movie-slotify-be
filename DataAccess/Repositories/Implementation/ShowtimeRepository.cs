@@ -102,5 +102,12 @@ namespace DataAccess.Repositories.Implementation
 
             return await query.AnyAsync();
         }
+
+        public async Task<bool> HasBookingsAsync(Guid showtimeId)
+        {
+            return await _context.Bookings
+                .IgnoreQueryFilters()
+                .AnyAsync(b => b.ShowtimeId == showtimeId && b.Status != BookingStatus.Cancelled);
+        }
     }
 }

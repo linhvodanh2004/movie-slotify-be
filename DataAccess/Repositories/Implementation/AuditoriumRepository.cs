@@ -20,6 +20,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Auditorium>> GetAllAsync(bool includeInactive = false)
         {
             var query = _context.Auditoriums
+                .IgnoreQueryFilters()
                 .Include(a => a.Cinema)
                 .Include(a => a.Seats)
                 .AsQueryable();
@@ -35,6 +36,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<IEnumerable<Auditorium>> GetByCinemaIdAsync(Guid cinemaId, bool includeInactive = false)
         {
             var query = _context.Auditoriums
+                .IgnoreQueryFilters()
                 .Where(a => a.CinemaId == cinemaId)
                 .Include(a => a.Cinema)
                 .Include(a => a.Seats)
@@ -51,6 +53,7 @@ namespace DataAccess.Repositories.Implementation
         public async Task<Auditorium> GetByIdAsync(Guid id)
         {
             return await _context.Auditoriums
+                .IgnoreQueryFilters()
                 .Include(a => a.Cinema)
                 .Include(a => a.Seats)
                 .FirstOrDefaultAsync(a => a.Id == id);

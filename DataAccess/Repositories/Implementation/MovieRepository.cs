@@ -59,5 +59,10 @@ namespace DataAccess.Repositories.Implementation
                 await _context.SaveChangesAsync();
             }
         }
+
+        public async Task<bool> HasShowtimesAsync(Guid movieId)
+        {
+            return await _context.Showtimes.IgnoreQueryFilters().AnyAsync(s => s.MovieId == movieId);
+        }
     }
 }

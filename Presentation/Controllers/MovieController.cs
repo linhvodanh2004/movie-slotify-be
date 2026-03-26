@@ -19,7 +19,7 @@ namespace Presentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllMovies([FromQuery] bool activeOnly = false, [FromQuery] string title = null, [FromQuery] string genre = null)
+        public async Task<IActionResult> GetAllMovies([FromQuery] bool activeOnly = true, [FromQuery] string title = null, [FromQuery] string genre = null)
         {
             if (!string.IsNullOrEmpty(title) || !string.IsNullOrEmpty(genre))
             {
